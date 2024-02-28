@@ -9,14 +9,11 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from hav_distance import haversine_distance
 import googlemaps
+from datetime import datetime
 
 # Read and prepare data
-ct = gpd.read_file('../data/tl_2023_17_tract/tl_2023_17_tract.shp') # Census Tracts (ct)
-ccc = pd.read_csv('../data/Child_Care_Centers.csv') # ChilCareCenters (ccc)
-ct.head(1)
-
-# CCC data is from all the country --> Filter IL
-ccc_il = ccc[ccc['STATE'] == 'IL']
+ct = gpd.read_file('../data/tl_2023_17_tract/tl_2023_17_tract.shp') # Census Tracts in IL (ct)
+ccc_il = pd.read_csv('../data/Child_Care_Centers_clean.csv.csv') # ChilCareCenters in IL (ccc)
 
 # Calculate centroids and add coordinates as new columns to the original 
 # census tract Geo DataFrame
@@ -40,7 +37,7 @@ plt.show()
 """
 
 # As ccc came from a csv, it needs to be transformed into a Geo DataFrame
-ccc_il_gpd = gpd.GeoDataFrame(ccc_il, geometry=gpd.points_from_xy(ccc_il['LONGITUDE'], ccc_il['LATITUDE']))
+ccc_il_gpd = gpd.GeoDataFrame(ccc_il, geometry=gpd.points_from_xy(ccc_il['longitude'], ccc_il['latitude']))
 
 # Set CRS to avoid spatial issues
 ccc_il_gpd.crs = 'EPSG:4326'
@@ -51,7 +48,7 @@ ccc_il_gpd.crs = 'EPSG:4326'
 ct_ccc = gpd.sjoin(ccc_il_gpd, ct, how='right', op='within')
 
 # Check results
-no_ccc = ct_ccc['NAME_left'].isna().sum() # How many census tracts don't have any CCC
+no_ccc = ct_ccc['objectid'].isna().sum() # How many census tracts don't have any CCC
 #print(len(ct_ccc))
 #print(no_ccc)
 """
@@ -94,8 +91,8 @@ buffer_ccc = gpd.sjoin(ccc_il_gpd, ct_buffer[['buffer_45', 'GEOID',
 # Calculate haversine distance for each pair of census tract centroid - CCC
 # Filter the three closest for each census tract
 buffer_ccc['hdistance'] = buffer_ccc.apply(lambda row: 
-                                           haversine_distance(row['LATITUDE'], 
-                                                              row['LONGITUDE'],
+                                           haversine_distance(row['latitude'], 
+                                                              row['longitude'],
                                                               row['centroid_lat'], 
                                                               row['centroid_lon'],), 
                                                               axis=1)
@@ -126,25 +123,38 @@ ct_three_ccc['distance_km'] = 0.0
 ct_three_ccc['distance_min'] = 0.0
 
 gmaps = googlemaps.Client(key = api_key)
+arrival_time = datetime(2024, 4, 11, 9, 0)
 
-# Iterate over rows to call API and fill values in dataframe
+# Set additional counter as an additional stop condition
+counter = 0
+
 for i, row in ct_three_ccc.iterrows():
     # Specify origin and destination coordinates
     origin = (row['centroid_lat'], row['centroid_lon'])  # Census tract centroid
-    destination = (row['LATITUDE'], row['LONGITUDE'])  # CCC coordinates
+    destination = (row['latitude'], row['longitude'])  # CCC coordinates
     
     # Make distance matrix request
-    result = gmaps.distance_matrix(origin, destination, mode = 'driving')
+    result = gmaps.distance_matrix(origin, destination, mode = 'driving', arrival_time = arrival_time)
 
-    # Extract the distance value in meters
-    distance_in_meters = result['rows'][0]['elements'][0]['distance']['value']
-    # Extract the distance value in time
-    duration_in_seconds = result['rows'][0]['elements'][0]['duration']['value']
+    if result['rows'][0]['elements'][0]['status'] == 'OK':
+        # Extract the distance value in meters
+        distance_in_meters = result['rows'][0]['elements'][0]['distance']['value']
+        # Extract the distance value in time
+        duration_in_seconds = result['rows'][0]['elements'][0]['duration']['value']
 
-    # Convert distance to kilometers and fill variable
-    ct_three_ccc.loc[i, 'distance_km'] = distance_in_meters / 1000
-    # Convert duration to minutes and fill variable
-    ct_three_ccc.loc[i, 'distance_min'] = duration_in_seconds / 60
+        # Convert distance to kilometers
+        ct_three_ccc.loc[i, 'distance_km'] = distance_in_meters / 1000
+        # Convert duration to minutes
+        ct_three_ccc.loc[i, 'distance_min'] = duration_in_seconds / 60
+    else:
+        ct_three_ccc.loc[i, 'distance_km'] = 'NaN'
+        ct_three_ccc.loc[i, 'distance_min'] = 'NaN'
+
+    # Update counter
+    counter += 1
+
+    if counter == len(ct_three_ccc):
+        break
 
 # Save data as csv
 ct_three_ccc.to_csv('../data/census_ccc_joined.csv', index = True)
