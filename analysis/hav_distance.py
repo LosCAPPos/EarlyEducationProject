@@ -30,6 +30,6 @@ def haversine_distance(lat1, lon1, lat2, lon2):
         np.sin((lat2 - lat1) / 2) ** 2
         + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
     )
-    distance = 2 * EARTH_R_MI * np.arcsin(aux_parenthesis)
+    distance = 2 * EARTH_R_MI * np.arcsin(aux_parenthesis) / 1.60934
 
     return distance
