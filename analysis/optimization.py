@@ -1,39 +1,42 @@
 from analysis.hav_distance import haversine_distance
 from analysis.google_api_request import get_google_distances
 import numpy as np
-
-
-"""
-from analysis.hav_distance import haversine_distance
-from analysis.google_api_request import get_google_distances
-import numpy as np
 import pandas as pd
 
-attribute = 'distance_min'
-n_child_center = 1
-#df = pd.read_csv("data/census_ccc_joined.csv")
-df = pd.read_csv("data/data_pre_merge.csv")
 
-new_km_distance_column = "new_km_distance"
-new_min_distance_column = "new_min_distance"
-lat_comparison_column = "new_center_latitude"
-lon_comparison_column = "new_center_longitude"
-
-df[df["to_analyze"]]
-
-trial = google_distances(
-    df,
-    new_km_distance_column,
-    new_min_distance_column,
-    lat_comparison_column,
-    lon_comparison_column,
-    limit_analysis=True,
-)
-
-"""
+user_api_key = "insert_your_user_api_key_for_google_matrix_distance"
 
 
-def create_new_center(df, user_api_key, optimized=False):
+def create_several_child_centers(user_api_key, number_child_centers, optimized):
+    """ """
+    df = pd.read_csv("data/final_data_merged.csv")
+    new_centers = number_child_centers
+    total_benefited_ct = []
+    total_impact_km = 0
+    total_impact_min = 0
+    for i in range(new_centers):
+        df, benefited_ct, impact_km, impact_min, ranking = create_new_center(
+            df, user_api_key, optimized
+        )
+        total_benefited_ct.append(benefited_ct)
+        total_impact_km += impact_km
+        total_impact_min += impact_min
+        print("New Child Center Number: ", i + 1)
+        print("Ranking in Access of the Census Tract: ", ranking + 1)
+        print("Census Tract of the New Child Center: ", benefited_ct[0])
+        print("\n")
+        print("List of Benefited Census Tracks: ", benefited_ct)
+        print("Singular Impact in Km: ", impact_km)
+        print("Singular impact in Minutes: ", impact_min)
+        print("\n")
+        print("List of All Benefited Census Tracks: ", total_benefited_ct)
+        print("Total Impact in Km: ", total_impact_km)
+        print("Total impact in Minutes: ", total_impact_min)
+        print("\n")
+        print("\n")
+
+
+def create_new_center(df, user_api_key, optimized):
     """
     Takes a child center dataframe "df" that has data at a census tract level
     and a column related to distance in minutes for each census tract.
@@ -55,20 +58,18 @@ def create_new_center(df, user_api_key, optimized=False):
     df = df.sort_values(by=["distance_min_imp"], ascending=[False])
     df = df.reset_index(drop=True)
 
-    # if optimized, take row number from the census tract that has the highest
+    # if optimized, take row (ranking) from the census tract that has the highest
     # expected impact, otherwise, take first row of df (longest distance in minutes)
     if optimized:
-        row_for_new_child_center = optimization_new_center_distance_overall_impact(df)
+        ranking = optimization_new_center_distance_overall_impact(df)
     else:
-        row_for_new_child_center = 0
+        ranking = 0
 
     # generate comparison columns with coordinates of the census tract with
     # highest distance in minutes
-    lat_comparison_column = "new_center_lat"
-    lon_comparison_column = "new_center_lon"
-    df[lat_comparison_column], df[lon_comparison_column] = (
-        df["centroid_lat"][row_for_new_child_center],
-        df["centroid_lon"][row_for_new_child_center],
+    df["new_center_lat"], df["new_center_lon"] = (
+        df["centroid_lat"][ranking],
+        df["centroid_lon"][ranking],
     )
 
     # calculate (haverstine) distance from each census tract to the new center
@@ -81,13 +82,13 @@ def create_new_center(df, user_api_key, optimized=False):
         )
     )
 
-    # if distance to the new center less than 1.5 respect to current maximum
-    # distance, analyze it. Otherwise, assume that the new center will not be
-    # the closest center. This is due to limits of google requests.
+    # if distance to the new center less than 1.5 current maximum distance,
+    # analyze it. Otherwise, assume that new center will not be closest center.
+    # This is done due to limits of google requests.
     df["to_analyze"] = df["hdistance_new_center"] < 1.5 * df["hdistance_min"]
 
     # don't analyze with google maps first census tract (there will be a child
-    # center there) and refresh child center parameters for that census tract
+    # center there) and set child center parameters for that census tract
     df.loc[0, "to_analyze"] = False
     benefited_ct.append(df.loc[0, "GEOID"])
     impact_km += df.loc[0, "hdistance_min"] - 0.1
@@ -97,14 +98,12 @@ def create_new_center(df, user_api_key, optimized=False):
     df.loc[0, "population"] += 50
 
     # define name of new columns and apply distance request in googlemaps
-    new_km_distance_column = "new_km_distance"
-    new_min_distance_column = "new_min_distance"
     get_google_distances(
         df,
-        new_km_distance_column,
-        new_min_distance_column,
-        lat_comparison_column,
-        lon_comparison_column,
+        "new_km_distance",
+        "new_min_distance",
+        "new_center_lat",
+        "new_center_lon",
         user_api_key,
         limit_analysis=True,
     )
@@ -131,7 +130,7 @@ def create_new_center(df, user_api_key, optimized=False):
         ]
     )
 
-    return df, benefited_ct, impact_km, impact_min
+    return df, benefited_ct, impact_km, impact_min, ranking
 
 
 def optimization_new_center_distance_overall_impact(df):
@@ -181,5 +180,5 @@ def new_center_distance_overall_impact(df, row_index):
         0,
     )
 
-    # return average reduced distance
+    # return sum reduced distance
     return df["reduced_distance"].sum()
