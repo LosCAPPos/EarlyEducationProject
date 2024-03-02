@@ -1,12 +1,16 @@
+#!/usr/bin/env python3
+
 import requests
 import pandas as pd
 import os
 
 # get parent_folder to grab information from separate folder
-parent_folder = os.path.abspath(os.path.join(os.getcwd(), ".."))
+#parent_folder = os.path.abspath(os.path.join(os.getcwd(), ".."))
+# testing if it runs in Terminal, keep empty when done
+test_folder = ""
 
 # retrieve Census API Key
-CensusAPI_fn = parent_folder + "/CensusAPI_key.txt"
+CensusAPI_fn = "CensusAPI_key.txt"
 
 with open(CensusAPI_fn, "r") as file:
     api_key = file.readline().strip()
@@ -88,11 +92,11 @@ col_names = ["DETAILS",
 
 # save to raw .csv
 df = pd.DataFrame(data[1:], columns=col_names)
-file_path = parent_folder + "/data/Census_data_raw.csv"
+file_path = test_folder + "data/Census_data_raw.csv"
 df.to_csv(file_path, index=False)
 
 # retreive raw data
-census_raw_file = parent_folder + "/data/Census_data_raw.csv"
+census_raw_file = test_folder + "data/Census_data_raw.csv"
 raw_census = pd.read_csv(census_raw_file, dtype=str)
 raw_census[['Tract_name', 'County_name', 'State_name']] = raw_census["DETAILS"].str.split(';', expand=True)
 raw_census.head()
@@ -141,5 +145,5 @@ CensusData["majority_asian"] = raw_census.apply(lambda row: is_majority(int(row[
 CensusData["majority_hispanic"] = raw_census.apply(lambda row: is_majority(int(row["HISPANIC"]), int(row["TOTPOP"])), axis=1)
 
 # save to clean .csv
-file_path = parent_folder + "/data/Census_data.csv"
+file_path = test_folder + "data/Census_data.csv"
 CensusData.to_csv(file_path, index=False)
