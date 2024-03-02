@@ -1,39 +1,39 @@
 # Data Visualization
 import dash
-from dash import html, dcc, dash_table
-from dash.dependencies import Input, Output
+from dash import html, dcc, dash_table, Input, Output
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import geopandas as gpd
+import json
+
+# print: do you want to do an optimization?
+# put an input: Yes No
+# how many child centers de you want to put?
+#input
+#do you want to do in the less access or with optimization 
+#input
+
+#if 
+#do the optimiztion function 
+#open database optimized
+#else
+#open regular database
 
 
-file_path = '/Users/elenaporfidia/Desktop/LOSCAPPOS/EarlyEducationProject/data/final_data_merged.csv'
+file_path = '../data/final_data_merged.csv'
+gdf_path = '../data/tl_2023_17_tract/tl_2023_17_tract.shp'
+
 df_final = pd.read_csv(file_path)
-gdf_path = '/Users/elenaporfidia/Desktop/LOSCAPPOS/EarlyEducationProject/data/tl_2023_17_tract/tl_2023_17_tract.shp'
-gdf = gpd.read_file(gdf_path)
-
 df_final['TRACTCE'] = df_final['TRACTCE'].astype(str)
-gdf['TRACTCE'] = gdf['TRACTCE'].astype(str)
-
-# Calculate 'ECC_Capacity' in df_final
 df_final['ECC_Capacity'] = df_final['pop_under5'] / df_final['tot_pop']
 
-# Assuming 'COUNTYFP' is initially in 'df_final', ensure it's included in the merge.
-# If 'COUNTYFP' is supposed to be in 'gdf' from the start, ensure it's not lost.
+gdf = gpd.read_file(gdf_path)
+gdf['TRACTCE'] = gdf['TRACTCE'].astype(str)
 gdf = gdf.merge(df_final[['TRACTCE', 'ECC_Capacity']], on='TRACTCE', how='left')
-
-# Check if 'COUNTYFP' exists in 'gdf' after the merge
-if 'COUNTYFP' not in gdf.columns:
-    raise KeyError("The COUNTYFP column is missing from the GeoDataFrame after the merge. Please check the data sources.")
-
 gdf['hover_text'] = gdf.apply(
     lambda row: f'Tract: {row["TRACTCE"]}<br>County: {row.get("COUNTYFP", "N/A")}<br>ECC Capacity: {row.get("ECC_Capacity", "N/A"):.2f}', axis=1)
-
-
-
-
-geojson = gdf.__geo_interface__                                                 # Convert the GeoDataFrame to a GeoJSON format
+geojson = json.loads(gdf.to_json())                                    
 
 
 # STATIC Race Analysis GRAPH
@@ -81,6 +81,7 @@ most_populous_data = pd.DataFrame({
 
 
 app = dash.Dash(__name__)
+
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -176,7 +177,7 @@ def update_map(hoverData):
         hoverinfo='text+z',                                                     # Sets the content of the hoverinfo
         showscale=False,                                                        # Hides the color scale bar
         marker_line_color='white',                                              # Sets the color of the state boundaries
-        marker_line_width=1,))                                                    # Sets the width of the state boundaries
+        marker_line_width=1,))                                                  # Sets the width of the state boundaries
 
     fig.update_layout(geo=dict(scope='usa',
             projection=go.layout.geo.Projection(type='albers usa'),             # Sets the map projection type
@@ -194,8 +195,8 @@ def update_map(hoverData):
 def update_il_map(hoverData):
     # Create a choropleth map using Plotly for Illinois census tracts
     fig_il = go.Figure(data=go.Choropleth(
-        geojson=geojson,  # Uses the GeoJSON data
-        featureidkey="properties.TRACTCE",  # Sets the feature identifier key
+        geojson=geojson,                                                        # Uses the GeoJSON data
+        featureidkey="properties.TRACTCE",                                      # Sets the feature identifier key
         locations=gdf['TRACTCE'],  # Sets the locations in the GeoDataFrame
         z=gdf.index,  # Uses the index as a placeholder for actual data
         text=gdf['hover_text'],  # Sets the hover text to the census tract code
@@ -221,7 +222,6 @@ def update_il_map(hoverData):
 @app.callback(
     Output('correlation-graph', 'figure'),
     [Input('socioeconomic-factor-dropdown', 'value')])
-
 def update_graph(selected_factor):
     fig = px.box(
         df_final, 
@@ -241,7 +241,7 @@ def update_graph(selected_factor):
 ################################################################################
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=8050)
 
 # REFERENCES: # https://plotly.com/python/bar-charts/ 
 # https://plotly.com/python/county-choropleth/
