@@ -3,13 +3,14 @@ import numpy as np
 EARTH_R_MI = 3963
 
 # NOTE: This python file is the one that was used in #PA3 of the course
-# (CAPP 30122) but with numpy instead of math to apply formulas to pandas
-# dataframes
+# (CAPP 30122) but in kilometers as a reference of distance and with numpy
+# instead of math to apply formulas to pandas dataframes
 
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     """
-    Calculate the distance between two points on a sphere (like Earth) in miles.
+    Calculate the distance between two points on a sphere (like Earth) in
+    kilometers.
 
     https://en.wikipedia.org/wiki/Haversine_formula
 
@@ -30,6 +31,6 @@ def haversine_distance(lat1, lon1, lat2, lon2):
         np.sin((lat2 - lat1) / 2) ** 2
         + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
     )
-    distance = 2 * EARTH_R_MI * np.arcsin(aux_parenthesis) * 1.60934 # in km
+    distance = 2 * EARTH_R_MI * np.arcsin(aux_parenthesis) * 1.60934  # in km
 
     return distance

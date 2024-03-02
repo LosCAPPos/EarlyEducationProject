@@ -33,42 +33,39 @@ trial = google_distances(
 """
 
 
-def create_new_center(df, user_api_key, optimized=False):
+def new_center_first_in_table(df, n_child_center, user_api_key):
     """
     Takes a child center dataframe "df" that has data at a census tract level
     and a column related to distance in minutes for each census tract.
-    Having distance in minutes as a reference, assigns a child center to a
-    census tract, and recalculates the
+    Having distance in minutes as a reference, assigns a child center to the
+    census tract that has the less access in the dataframe, and recalculates the
     distance in kilometers and minutes to the closest child center for each
     census tract (because they can be benefited by the new child center).
-    If "optimized" is False, puts a child center in the census tract that has
-    less access in the dataframe (longer distance in minutes).
-    If "optimized" is True, puts a child center in the census tract that has the
-    higher estimated impact in the dataframe as a whole.
     """
     # return variables: impact in reduced kilometers and reduced minutes
-    impact_km = 0
-    impact_min = 0
-    benefited_ct = []
+    total_impact_km = 0
+    total_impact_min = 0
+    benefited_census_tracts = []
 
+    # sort the dataframe by census tract and distance in minutes
+    df = df.sort_values(
+        by=["TRACTCE", "distance_min_imp"], ascending=[True, True], na_position="last"
+    )
+    # keep the reference for the n_child_center
+    df = df.groupby("TRACTCE").apply(
+        lambda x: x.iloc[n_child_center - 1], include_groups=False
+    )
     # sort the dataframe by lowest access and reset index
     df = df.sort_values(by=["distance_min_imp"], ascending=[False])
     df = df.reset_index(drop=True)
 
-    # if optimized, take row number from the census tract that has the highest
-    # expected impact, otherwise, take first row of df (longest distance in minutes)
-    if optimized:
-        row_for_new_child_center = optimization_new_center_distance_overall_impact(df)
-    else:
-        row_for_new_child_center = 0
-
     # generate comparison columns with coordinates of the census tract with
     # highest distance in minutes
-    lat_comparison_column = "new_center_lat"
-    lon_comparison_column = "new_center_lon"
+    lat_comparison_column = "new_center_latitude"
+    lon_comparison_column = "new_center_longitude"
     df[lat_comparison_column], df[lon_comparison_column] = (
-        df["centroid_lat"][row_for_new_child_center],
-        df["centroid_lon"][row_for_new_child_center],
+        df["centroid_lat"][0],
+        df["centroid_lon"][0],
     )
 
     # calculate (haverstine) distance from each census tract to the new center
@@ -76,8 +73,8 @@ def create_new_center(df, user_api_key, optimized=False):
         hdistance_new_center=haversine_distance(
             df["centroid_lat"].astype(float),
             df["centroid_lon"].astype(float),
-            df["new_center_lat"].astype(float),
-            df["new_center_lon"].astype(float),
+            df["new_center_latitude"].astype(float),
+            df["new_center_longitude"].astype(float),
         )
     )
 
@@ -89,9 +86,9 @@ def create_new_center(df, user_api_key, optimized=False):
     # don't analyze with google maps first census tract (there will be a child
     # center there) and refresh child center parameters for that census tract
     df.loc[0, "to_analyze"] = False
-    benefited_ct.append(df.loc[0, "GEOID"])
-    impact_km += df.loc[0, "hdistance_min"] - 0.1
-    impact_min += df.loc[0, "distance_min_imp"] - 1
+    benefited_census_tracts.append(df.loc[0, "GEOID"])
+    total_impact_km += df.loc[0, "hdistance_min"] - 0.1
+    total_impact_min += df.loc[0, "distance_min_imp"] - 1
     df.loc[0, "hdistance_min"] = 0.1
     df.loc[0, "distance_min_imp"] = 1
     df.loc[0, "population"] += 50
@@ -113,41 +110,31 @@ def create_new_center(df, user_api_key, optimized=False):
     # assign new center as closest center
     for index, row in df.iterrows():
         if row["to_analyze"] and row["new_min_distance"] < row["distance_min_imp"]:
-            benefited_ct.append(df.loc[index, "GEOID"])
-            impact_km += df.loc[index, "hdistance_min"] - row["hdistance_new_center"]
-            impact_min += df.loc[index, "distance_min_imp"] - row["new_min_distance"]
+            benefited_census_tracts.append(df.loc[index, "GEOID"])
+            total_impact_km += (
+                df.loc[index, "hdistance_min"] - row["hdistance_new_center"]
+            )
+            total_impact_min += df.loc[0, "distance_min_imp"] - row["new_min_distance"]
             df.loc[index, "hdistance_min"] = row["hdistance_new_center"]
             df.loc[index, "distance_min_imp"] = row["new_min_distance"]
 
-    # drop helper columns created by the function
-    df = df.drop(
-        columns=[
-            "new_center_lat",
-            "new_center_lon",
-            "hdistance_new_center",
-            "to_analyze",
-            "new_km_distance",
-            "new_min_distance",
-        ]
-    )
-
-    return df, benefited_ct, impact_km, impact_min
+    return df, benefited_census_tracts, total_impact_km, total_impact_min
 
 
-def optimization_new_center_distance_overall_impact(df):
+def optimization_new_center_distance_overall_impact(df, attribute):
     """ """
     # sort the dataframe and reset index
-    df = df.sort_values("distance_min_imp", ascending=False)
+    df = df.sort_values(attribute, ascending=False)
     df = df.reset_index(drop=True)
 
     # check what is the census tract that would have the biggest overall impact
     # reducing the distance if it has a new child center.
     optimum_row_index = 0
     aux_highest_impact = 0
-    # for effiency, just check in the first 150 census tracts (highest
+    # for effiency, just check in the first 20 census tracts (highest
     # probability to have a higher impact)
-    for row_index in range(150):
-        impact = new_center_distance_overall_impact(df, row_index)
+    for row_index in range(20):
+        impact = new_center_distance_overall_impact(df, attribute, row_index)
         if impact > aux_highest_impact:
             aux_highest_impact = impact
             optimum_row_index = row_index
@@ -155,31 +142,32 @@ def optimization_new_center_distance_overall_impact(df):
     return optimum_row_index
 
 
-def new_center_distance_overall_impact(df, row_index):
+def new_center_distance_overall_impact(df, attribute, row_index):
     """ """
     # generate columns X, Y with coordinates of census tract in row row_index
-    df["new_center_lat"], df["new_center_lon"] = (
-        df["centroid_lat"][row_index],
-        df["centroid_lon"][row_index],
+    df["new_center_latitude"], df["new_center_longitude"] = (
+        df["latitude"][row_index],
+        df["longitude"][row_index],
     )
 
     # calculate (haverstine) distance from each census tract to potential new
     # center
     df = df.assign(
-        hdistance_new_center=haversine_distance(
-            df["centroid_lat"],
-            df["centroid_lon"],
-            df["new_center_lat"],
-            df["new_center_lon"],
+        distance_new_center=haversine_distance(
+            df["latitude"],
+            df["longitude"],
+            df["new_center_latitude"],
+            df["new_center_longitude"],
         )
     )
 
     # potential changes in distance to closest center for each census tract
+    # NOTE: CHANGE "new_center_latitude"
     df["reduced_distance"] = np.where(
-        df["hdistance_min"] - df["hdistance_new_center"] > 0,
-        df["hdistance_min"] - df["hdistance_new_center"],
+        df["new_center_latitude"] - df["distance_new_center"] > 0,
+        df["new_center_latitude"] - df["distance_new_center"],
         0,
     )
 
     # return average reduced distance
-    return df["reduced_distance"].sum()
+    return df["reduced_distance"].mean()
