@@ -15,14 +15,21 @@ gdf_path = "data/tl_2023_17_tract/tl_2023_17_tract.shp"
 
 df_final = pd.read_csv(file_path)
 df_final["GEOID"] = df_final["GEOID"].astype(str)
-df_final["ECC_Capacity"] = df_final["pop_under5"] / df_final["tot_pop"]
 
 gdf = gpd.read_file(gdf_path)
 gdf["GEOID"] = gdf["GEOID"].astype(str)
-gdf = gdf.merge(df_final[["GEOID", "ECC_Capacity"]], on="GEOID", how="left")
+gdf = gdf.merge(df_final[["GEOID", "pop_under5", "distance_min_imp", "distance_mean_imp"]], on="GEOID", how="left")
 gdf["hover_text"] = gdf.apply(
-    lambda row: f'Tract: {row["GEOID"]}<br>County: {row.get("COUNTYFP", "N/A")}<br>ECC Capacity: {row.get("ECC_Capacity", "N/A"):.2f}',
-    axis=1,)
+    lambda row: (
+        f'Census Tract Code: {row["GEOID"]}<br>'
+        f'County Codes of Illinois: {row.get("COUNTYFP", "N/A")}<br>'
+        f'Population of Children Under 5: {row.get("pop_under5", "N/A"):.2f}<br>'
+        f'Distance to Closest ECC (min): {row.get("distance_min_imp", "N/A"):.2f}<br>'
+        f'Average Distance to Closest 3 ECC (min): {row.get("distance_mean_imp", "N/A"):.2f}'
+    ),
+    axis=1,
+)
+
 geojson = json.loads(gdf.to_json())
 
 
@@ -72,9 +79,9 @@ def create_us_map():
             colorscale="Blues",
             text=df["State"],
             hoverinfo="text+z",
-            showscale=False,
+            showscale=True,
             marker_line_color="white",
-            marker_line_width=1,))
+            marker_line_width=0.5,))
 
     fig.update_layout(
         geo=dict(
@@ -92,27 +99,27 @@ def create_il_map():
         data=go.Choropleth(
             geojson=geojson,
             featureidkey="properties.GEOID",
-            locations=gdf["GEOID"],
-            z=gdf.index,  # Assuming this is some measure for coloring
+            locations=gdf["GEOID"],  # Use the GEOID for mapping each tract
+            z=gdf["distance_min_imp"],  # Use 'distance_min_imp' for color coding
             text=gdf["hover_text"],
             hoverinfo="text",
-            colorscale="Blues",
-            showscale=False,
+            colorscale="Blues",  # Use a color scale that visually represents the range well, 'Reds' works for higher = stronger
+            colorbar_title="Distance to ECC<br>(min)",  # Add a color scale bar for reference
             marker_line_color="white",
-            marker_line_width=0.5,
+            marker_line_width=0.1,
         )
     )
 
-    # Set the map bounds to the extent of the GeoJSON data
+    # Sets the map bounds to the extent of the GeoJSON data
     fig_il.update_geos(
         visible=True,
-        projection_scale=3,  # adjust this value
+        projection_scale=3,  # Adjust this value as needed
         center=dict(lat=39.8, lon=-89.6),  # Adjust the lat/lon as needed
         fitbounds="locations"
     )
 
     fig_il.update_layout(
-        title_text="Illinois Census Tract Map",
+        title_text="Illinois Census Tract Map: Distance to Closest ECC",
         geo=dict(
             showframe=False,
             showcoastlines=False,
@@ -218,7 +225,7 @@ app.layout = html.Div(
                                            "40px"}),
         dcc.Dropdown(
             id="socioeconomic-factor-dropdown_1",
-            options=["Race Analysis", "Housing", "Education", "Income"],
+            options=["Race", "Housing", "Education", "Income"],
             value="Race Analysis",
         ),
         dcc.Graph(id="race-bar-graph"),
@@ -316,14 +323,13 @@ def update_graph(selected_factor, y_col):
         df_final,
         x=selected_factor,
         y=y_col,
-        labels={"distance_mean_imp": "Distance to Closest ECC (minutes)"},
+        labels={"distance_mean_imp": "Average Distance to Closest 3 ECC (minutes)"},
         notched=True,
     )
 
     fig.update_traces(marker_color="#1f77b4")
     fig.update_layout(
-        title='''Average Distance to Nearest Childcare Center Among Different 
-        Socioeconomic Groups''',
+        title='''Average Distance to Nearest Childcare Centers Among Different Socioeconomic Groups''',
         yaxis_title="Distance to Closest ECC (in minutes)",
         xaxis_title=selected_factor.replace("_", " ").title(),
         boxmode="group",
@@ -382,7 +388,7 @@ def update_race_bar_graph(value):
 
     race_bar_graph_figure.update_layout(
         title_text="Demographic Analysis Across Census Tracts",
-        xaxis_title="Factor",
+        xaxis_title="Demographic Factor",
         yaxis_title="Percentage",
         yaxis=dict(ticksuffix="%"),
     )
