@@ -9,12 +9,6 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
     Establishes where to put a defined number of child centers (number of
     iterations) in Illinois using the distance in minutes between the centroid
     of the census tract and the closest child center as a reference.
-    If "optimized" is False, in each iteration each new child center will be put
-    in the census tract that has less access in the dataframe (longer distance
-    in minutes).
-    If "optimized" is True, in each iteration each new child center will be put
-    in the census tract that has the higher estimated impact in the dataframe
-    as a whole.
 
     Inputs:
         user_api_key (str): key of google distance matrix API
@@ -26,22 +20,20 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
 
     Returns (tuple): a tuple with 6 variables:
         ranking_lst (lst): List with the ranking value (int) of the census
-            tracts related to their previous distance to the closest child
+            tracts related to their previous distance to closest child
             center
         single_impact_km (lst): List with the impact in reduced kilometers
-            (float) to the closest child center that the implemention of each
-            child center would have in the whole dataframe
+            (float) to the closest child center for each new child center
+            in the whole dataframe
         single_impact_min (lst): List with the impact in reduced minutes (float)
-            to the closest child center that the implemention of each child
-            center would have in the whole dataframe
+            to the closest child center for each child center in the
+            whole dataframe
         total_benefited_ct (lst): List with the benefited census tracts (list of
             integers) related to each new child center
-        total_impact_km (float): impact in reduced kilometers (float) to the
-            closest child center that the implemention of all new child centers
-            would have in the whole dataframe
-        total_impact_min (float): impact in reduced minutes (float) to the
-            closest child center that the implemention of all new child centers
-            would have in the whole dataframe
+        total_impact_km (float): total impact in reduced kilometers (float) to
+            the closest child center related to the new child centers
+        total_impact_min (float): total impact in reduced minutes (float) to the
+            closest child center related to the new child centers
     """
     # import database
     df = pd.read_csv("data/final_data_merged.csv")
@@ -82,12 +74,7 @@ def create_new_center(df, user_api_key, optimized):
     and a column related to distance in minutes for each census tract.
     Having distance in minutes as a reference, assigns one child center to a
     census tract, and recalculates the distance in kilometers and minutes to
-    the closest child center for each census tract (because they can be
-    benefited by the new child center).
-    If "optimized" is False, puts a child center in the census tract that has
-    less access in the dataframe (longer distance in minutes).
-    If "optimized" is True, puts a child center in the census tract that has the
-    higher estimated impact in the dataframe as a whole.
+    the closest child center for each census tract.
 
     Inputs:
         df (pandas df): the pandas dataframe
@@ -98,15 +85,13 @@ def create_new_center(df, user_api_key, optimized):
             dataframe as a whole
 
     Returns (tuple): a tuple with 5 variables:
-        df (pandas df): the pandas dataframe with the new child center on it
-        benefited_ct (lst): the benefited census tracts (list of
+        df (pandas df): pandas dataframe with the new child center on it
+        benefited_ct (lst): benefited census tracts (list of
             integers) related to the new child center
-        impact_km (float): impact in reduced kilometers (float) to the closest
-            child center that the implemention of the new child center would
-            have in the whole dataframe
-        impact_min (float): impact in reduced minutes (float) to the closest
-            child center that the implemention of the new child center would
-            have in the whole dataframe
+        impact_km (float): impact in reduced kilometers (float) that the new
+            child center would have in the whole dataframe
+        impact_min (float): impact in reduced minutes (float) that the new child
+            center would have in the whole dataframe
         ranking (int): ranking value (int) of the census tract related to its
             previous distance to the closest child center
     """
@@ -196,10 +181,9 @@ def create_new_center(df, user_api_key, optimized):
 
 def optimization_new_center_distance_overall_impact(df):
     """
-    Takes a pandas dataframe that has data at a census tract level
-    and a column related to distance in minutes to the closest child center for
-    each census tract.
-    It estimates in what census tract a new center would have the highest impact
+    Takes a pandas dataframe that has data at a census tract level and a column
+    related to distance in minutes to closest child center by census tract.
+    Estimates in what census tract a new center would have the highest impact
     in the whole dataframe in terms of haversine distance to the
     closest child center.
 
@@ -230,12 +214,10 @@ def optimization_new_center_distance_overall_impact(df):
 
 def new_center_distance_overall_impact(df, row_index):
     """
-    Takes a pandas dataframe that has data at a census tract level
-    and a column related to distance in minutes to the closest child center for
-    each census tract.
-    It estimates the impact in haversine distance to the closest child center
-    in the whole dataframe of a new center in the census tract related to
-    row_index.
+    Takes a pandas dataframe that has data at a census tract level and a column
+    related to distance in minutes to closest child center by census tract.
+    Estimates the impact in haversine distance to the closest child center
+    in the whole dataframe of a new center in the census tract in row_index.
 
     Inputs:
         df (pandas df): the pandas dataframe with data at a census tract level

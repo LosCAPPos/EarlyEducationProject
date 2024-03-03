@@ -12,10 +12,10 @@ def get_google_distances(
     limit_analysis=False,
 ):
     """
-    Use Google Directions API to get the distance in km and time (minutes) from
-    each census tract centroid to the latitude and longitude columns defined
-    in "lat_comparison_column" and "lon_comparison_column". Modifies the pandas
-    dataframe "df", doesn't have a return.
+    Use Google Matrix Distance API to get the distance in km and time (minutes)
+    from each census tract centroid to the latitude and longitude columns
+    defined in "lat_comparison_column" and "lon_comparison_column".
+    Modifies the pandas dataframe "df", doesn't have a return.
 
     Inputs:
         df (pandas df): Pandas dataframe that has information at a census tract
