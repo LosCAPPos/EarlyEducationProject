@@ -282,12 +282,12 @@ app.layout = html.Div(
         html.Br(),
         html.Label("Do you want to optimize?"),
         dcc.Dropdown(
-            id="optimized-dropdown",
+            id="optimized_dropdown",
             options=[
                 {"label": "Yes", "value": "Yes"},
                 {"label": "No", "value": "No"}
             ],
-            value="Yes",
+            value="True",
         ),
         html.Button('Run Simulation', id='run-simulation-button'),
         html.Div(id="model_output"),])
@@ -382,25 +382,17 @@ def update_race_bar_graph(value):
 @app.callback(
     Output("model_output", "children"),
     [Input("run-simulation-button", "n_clicks")],  # Listen for button click
-    [State("centers_input", "value"), State("optimized-dropdown", "value")],  # Other inputs as states
+    [State("centers_input", "value"), State("optimized_dropdown", "value")],  # Other inputs as states
 )
 
-def update_model_output(centers_input, optimized_dropdown, n_clicks):
+def update_model_output(n_clicks, centers_input, optimized_dropdown):
     if n_clicks is None or centers_input is None:
         # No clicks means no simulation run
         return ""
-    
-    optimized = optimized_dropdown == "Yes"
+    optimized = True if optimized_dropdown == 'Yes' else False
 
-    # Call your simulation function with the above parameters
-    (
-        ranking_lst,
-        single_impact_km,
-        single_impact_min,
-        total_benefited_ct,
-        total_impact_km,
-        total_impact_min,
-    ) = create_several_child_centers("API_KEY", centers_input, optimized)
+    ranking_lst, single_impact_km, single_impact_min, total_benefited_ct, total_impact_km, total_impact_min, = create_several_child_centers(
+        "API_KEY", centers_input, optimized)
     output = html.Div(
         [
             html.Div([html.H5("Ranking List: "), ", ".join(str(v) for v in ranking_lst)]),
@@ -420,18 +412,18 @@ def update_model_output(centers_input, optimized_dropdown, n_clicks):
                 ]
             ),
             html.Div(
-                [html.H5("Total Impact in Km List: "), ", ".join(str(v) for v in total_impact_km)]
+                [html.H5("Total Impact in Km: "), str(total_impact_km)]
             ),
             html.Div(
-                [html.H5("Total impact in Minutes List: "), ", ".join(str(v) for v in total_impact_min)]
+                [html.H5("Total impact in Minutes List: "), str(total_impact_min)]
             ),
         ]
     )
     return output
 
-
 if __name__ == "__main__":
     app.run_server(debug=True, port=8000)
+
 
 
 # REFERENCES: # https://plotly.com/python/bar-charts/
