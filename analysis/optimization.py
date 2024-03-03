@@ -5,7 +5,17 @@ import pandas as pd
 
 
 def create_several_child_centers(user_api_key, number_child_centers, optimized):
-    """ """
+    """
+    Establishes where to put a defined number of child centers (number of
+    iterations) in Illinois using the distance in minutes between the centroid
+    of the census tract and the closest child center as a reference.
+    If "optimized" is False, in each iteration each new child center will be put
+    in the census tract that has less access in the dataframe (longer distance
+    in minutes).
+    If "optimized" is True, in each iteration each new child center will be put
+    in the census tract that has the higher estimated impact in the dataframe
+    as a whole.
+    """
     df = pd.read_csv("../data/final_data_merged.csv")
     new_centers = number_child_centers
     total_benefited_ct = []
@@ -52,10 +62,10 @@ def create_new_center(df, user_api_key, optimized):
     """
     Takes a child center dataframe "df" that has data at a census tract level
     and a column related to distance in minutes for each census tract.
-    Having distance in minutes as a reference, assigns a child center to a
-    census tract, and recalculates the
-    distance in kilometers and minutes to the closest child center for each
-    census tract (because they can be benefited by the new child center).
+    Having distance in minutes as a reference, assigns one child center to a
+    census tract, and recalculates the distance in kilometers and minutes to
+    the closest child center for each census tract (because they can be
+    benefited by the new child center).
     If "optimized" is False, puts a child center in the census tract that has
     less access in the dataframe (longer distance in minutes).
     If "optimized" is True, puts a child center in the census tract that has the
