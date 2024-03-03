@@ -60,7 +60,7 @@ def create_us_map():
                 68,49,58,55,23,44,50,42,22,51,
                 53,44,26,48,54,60,28,72,46,46,
                 53,64,44,24,39,55,60,57,47,42,
-                43,48,48,77,35,47,63,64,54,34,],})
+                43,48,48,77,35,47,63,64,54,34,],}) 
 
     # Create a choropleth map using Plotly with the states' capacity percentage
     fig = go.Figure(
@@ -276,6 +276,17 @@ app.layout = html.Div(
             style={"margin-top": "20px", "font-size": "1.2em"},
         ),
         html.H2("Model Simulation", style={"text-align": "center", "margin-top": "40px"}),
+        html.P(children="""
+        The proposed simulation model will enable us to forecast the effects of 
+        introducing more ECCs, particularly in underserved areas. By 
+        integrating this model, we can dynamically update our database, 
+        refining the accuracy of our accessibility metrics across different 
+        census tracts. Ultimately, the goal of this research is to provide light 
+        on the ways in which more inclusive child care infrastructures may be 
+        created, creating settings in which every family has a chance to 
+        prosper and it is up to you to experiment and learn more about this 
+        through our platform!  
+        """),
         html.Br(),
         html.Label("Number of Child Centers"),
         dcc.Input(id="centers_input", type="number", value=1),
