@@ -16,7 +16,7 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
     in the census tract that has the higher estimated impact in the dataframe
     as a whole.
     """
-    df = pd.read_csv("../data/final_data_merged.csv")
+    df = pd.read_csv("data/final_data_merged.csv")
     new_centers = number_child_centers
     total_benefited_ct = []
     single_impact_km = []
