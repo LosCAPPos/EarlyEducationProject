@@ -56,42 +56,49 @@ df_final["education_category"] = pd.cut(
 
 
 def create_us_map():
-    df = pd.DataFrame(
-        {
-            "State": ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
-                "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
-                "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
-                "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-                "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"],
-            "Capacity_Percentage": [60,61,48,35,60,61,51,44,38,44,
-                68,49,58,55,23,44,50,42,22,51,
-                53,44,26,48,54,60,28,72,46,46,
-                53,64,44,24,39,55,60,57,47,42,
-                43,48,48,77,35,47,63,64,54,34,],}) 
+    df = pd.DataFrame({
+        "State": ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+                  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+                  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+                  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+                  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"],
+        "Desert_Percentage": [60, 61, 48, 35, 60, 61, 51, 44, 38, 44,
+                              68, 49, 58, 55, 23, 44, 50, 42, 22, 51,
+                              53, 44, 26, 48, 54, 60, 28, 72, 46, 46,
+                              53, 64, 44, 24, 39, 55, 60, 57, 47, 42,
+                              43, 48, 48, 77, 35, 47, 63, 64, 54, 34,]
+    })
 
-    # Create a choropleth map using Plotly with the states' capacity percentage
+    # Construct the hover text
+    df['hover_text'] = df.apply(lambda row: f'State: {row["State"]}<br>ECC Desert: {row["Desert_Percentage"]}%', axis=1)
+
+    # Create a choropleth map using Plotly with the states' ECC desert percentage
     fig = go.Figure(
         data=go.Choropleth(
             locations=df["State"],
-            # Sets the data to be color-coded
-            z=df["Capacity_Percentage"].astype(str),
+            z=df["Desert_Percentage"].astype(float), 
             locationmode="USA-states",
             colorscale="Blues",
-            text=df["State"],
-            hoverinfo="text+z",
+            text=df['hover_text'], 
+            hoverinfo="text",  # Only show the hover text
             showscale=True,
             marker_line_color="white",
-            marker_line_width=0.5,))
+            marker_line_width=0.5,
+        )
+    )
 
     fig.update_layout(
         geo=dict(
             scope="usa",
             projection=go.layout.geo.Projection(type="albers usa"),
             showlakes=True,
-            lakecolor="rgb(255, 255, 255)",),
-        margin=dict(l=0, r=0, t=0, b=0),)
+            lakecolor="rgb(255, 255, 255)",
+        ),
+        margin=dict(l=0, r=0, t=0, b=0),
+    )
 
     return fig
+
 
 
 def create_il_map():
@@ -100,11 +107,11 @@ def create_il_map():
             geojson=geojson,
             featureidkey="properties.GEOID",
             locations=gdf["GEOID"],  # Use the GEOID for mapping each tract
-            z=gdf["distance_min_imp"],  # Use 'distance_min_imp' for color coding
+            z=gdf["distance_min_imp"],  # 'distance_min_imp' for color coding
             text=gdf["hover_text"],
             hoverinfo="text",
-            colorscale="Blues",  # Use a color scale that visually represents the range well, 'Reds' works for higher = stronger
-            colorbar_title="Distance to ECC<br>(min)",  # Add a color scale bar for reference
+            colorscale="Blues",  
+            colorbar_title="Distance to ECC<br>(min)", 
             marker_line_color="white",
             marker_line_width=0.1,
         )
@@ -119,7 +126,7 @@ def create_il_map():
     )
 
     fig_il.update_layout(
-        title_text="Illinois Census Tract Map: Distance to Closest ECC",
+        title_text="Exploring Distances to Closest Early Childcare Centers",
         geo=dict(
             showframe=False,
             showcoastlines=False,
@@ -176,7 +183,7 @@ app.layout = html.Div(
             style={"font-size": "1.2em", "margin-bottom": "20px"},
         ),
         html.H2(
-            children="Childcare Center Deserts in The United States",
+            children="Early Childcare Center Deserts in The United States",
             style={"text-align": "center", "margin-bottom": "10px"},
         ),
         dcc.Graph(
@@ -196,7 +203,7 @@ app.layout = html.Div(
             style={"margin-top": "20px", "font-size": "1.2em"},
         ),
         html.H2(
-            children="Illinois Census Tract Map",
+            children="Census Tract Map of the State of Illinois",
             style={
                 "text-align": "center",
                 "margin-top": "40px",
