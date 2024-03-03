@@ -276,21 +276,21 @@ app.layout = html.Div(
             style={"margin-top": "20px", "font-size": "1.2em"},
         ),
         html.H2("Model Simulation", style={"text-align": "center", "margin-top": "40px"}),
-    html.Br(),
-    html.Label("Number of Child Centers"),
-    dcc.Input(id="centers_input", type="number", value=1),
-    html.Br(),
-    html.Label("Do you want to optimize?"),
-    dcc.Dropdown(
-        id="optimized-dropdown",
-        options=[
-            {"label": "Yes", "value": "Yes"},
-            {"label": "No", "value": "No"}
-        ],
-        value="Yes",
-    ),
-    html.Button('Run Simulation', id='run-simulation-button'),
-    html.Div(id="model_output"),])
+        html.Br(),
+        html.Label("Number of Child Centers"),
+        dcc.Input(id="centers_input", type="number", value=1),
+        html.Br(),
+        html.Label("Do you want to optimize?"),
+        dcc.Dropdown(
+            id="optimized-dropdown",
+            options=[
+                {"label": "Yes", "value": "Yes"},
+                {"label": "No", "value": "No"}
+            ],
+            value="Yes",
+        ),
+        html.Button('Run Simulation', id='run-simulation-button'),
+        html.Div(id="model_output"),])
 
 
 @app.callback(
@@ -385,14 +385,14 @@ def update_race_bar_graph(value):
     [State("centers_input", "value"), State("optimized-dropdown", "value")],  # Other inputs as states
 )
 
-def update_model_output(centers_input, optimized_dropdown):
-    if n_clicks is None:
+def update_model_output(centers_input, optimized_dropdown, n_clicks):
+    if n_clicks is None or centers_input is None:
+        # No clicks means no simulation run
         return ""
+    
+    optimized = optimized_dropdown == "Yes"
 
-    if optimized_dropdown == "Yes":
-            optimized = True
-    else:
-            optimized = False
+    # Call your simulation function with the above parameters
     (
         ranking_lst,
         single_impact_km,
