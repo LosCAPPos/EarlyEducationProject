@@ -22,8 +22,7 @@ gdf["GEOID"] = gdf["GEOID"].astype(str)
 gdf = gdf.merge(df_final[["GEOID", "ECC_Capacity"]], on="GEOID", how="left")
 gdf["hover_text"] = gdf.apply(
     lambda row: f'Tract: {row["GEOID"]}<br>County: {row.get("COUNTYFP", "N/A")}<br>ECC Capacity: {row.get("ECC_Capacity", "N/A"):.2f}',
-    axis=1,
-)
+    axis=1,)
 geojson = json.loads(gdf.to_json())
 
 
@@ -75,19 +74,15 @@ def create_us_map():
             hoverinfo="text+z",
             showscale=False,
             marker_line_color="white",
-            marker_line_width=1,
-        )
-    )
+            marker_line_width=1,))
 
     fig.update_layout(
         geo=dict(
             scope="usa",
             projection=go.layout.geo.Projection(type="albers usa"),
             showlakes=True,
-            lakecolor="rgb(255, 255, 255)",
-        ),
-        margin=dict(l=0, r=0, t=0, b=0),
-    )
+            lakecolor="rgb(255, 255, 255)",),
+        margin=dict(l=0, r=0, t=0, b=0),)
 
     return fig
 
@@ -107,19 +102,15 @@ def create_il_map():
             colorscale="Blues",
             showscale=False,
             marker_line_color="white",  # Sets the color of the tract boundaries
-            marker_line_width=0.5,
-        )
-    )
+            marker_line_width=0.5,))
 
     fig_il.update_geos(
-        visible=True, projection_scale=4, center=dict(lat=39.8, lon=-89.6)
-    )
+        visible=True, projection_scale=4, center=dict(lat=39.8, lon=-89.6))
 
     fig_il.update_layout(
         title_text="Illinois Census Tract Map",
         geo_scope="usa",
-        margin=dict(l=0, r=0, t=40, b=0),
-    )
+        margin=dict(l=0, r=0, t=40, b=0),)
 
     return fig_il
 
@@ -135,8 +126,7 @@ app.layout = html.Div(
             style={
                 "font-size": "2.5em",
                 "text-align": "center",
-                "margin-bottom": "20px",
-            },
+                "margin-bottom": "20px",},
         ),
         html.Div(
             children="""
@@ -163,7 +153,6 @@ app.layout = html.Div(
         access so that every kid, regardless of zip code, race, or of other 
         demographic characteristics, may take advantage of the vital learning 
         opportunities.
-
     """,
             style={"font-size": "1.2em", "margin-bottom": "20px"},
         ),
@@ -192,8 +181,7 @@ app.layout = html.Div(
             style={
                 "text-align": "center",
                 "margin-top": "40px",
-                "margin-bottom": "10px",
-            },
+                "margin-bottom": "10px",},
         ),
         dcc.Graph(
             id="il-map", config={"displayModeBar": False}, figure=create_il_map()
@@ -245,8 +233,7 @@ app.layout = html.Div(
             options=[
                 {"label": "Race", "value": "race_category"},
                 {"label": "Housing", "value": "housing_category"},
-                {"label": "Education", "value": "education_category"},
-            ],  # ADD INCOME
+                {"label": "Education", "value": "education_category"},],  # ADD INCOME
             value="race_category",
         ),
         html.Br(),
@@ -276,7 +263,7 @@ app.layout = html.Div(
         """,
             style={"margin-top": "20px", "font-size": "1.2em"},
         ),
-        html.H2("Model Output", style={"text-align": "center", 
+        html.H2("Model Simulation", style={"text-align": "center", 
                                        "margin-top": "40px"}),
         html.Br(),
         html.Label("Number of Child Centers"),
@@ -287,12 +274,10 @@ app.layout = html.Div(
             id="optimized-dropdown",
             options=[{"label": "Yes", "value": "Yes"}, {"label": "No", 
                                                         "value": "No"}],
-            value="Yes",
-        ),
+            value="Yes",),
         html.Div(id="model_output"),])
 
 
-################################################################################
 @app.callback(
     Output("correlation-graph", "figure"),
     [
@@ -321,7 +306,6 @@ def update_graph(selected_factor, y_col):
     return fig
 
 
-################################################################################
 @app.callback(
     Output("race-bar-graph", "figure"),
     [Input("socioeconomic-factor-dropdown_1", "value")],
