@@ -14,7 +14,25 @@ def get_google_distances(
     """
     Use Google Directions API to get the distance in km and time (minutes) from
     each census tract centroid to the latitude and longitude columns defined
-    in "lat_comparison_column" and "lon_comparison_column".
+    in "lat_comparison_column" and "lon_comparison_column". Modifies the pandas
+    dataframe "df", doesn't have a return.
+
+    Inputs:
+        df (pandas df): Pandas dataframe that has information at a census tract
+            level
+        new_km_distance_column (str): string that will be used as name of the
+            new column of distance in kilometers
+        new_min_distance_column (str): string that will be used as name of the
+            new column of distance in minutes
+        lat_comparison_column (str): column that has the reference of latitude
+            of the comparison point
+        lon_comparison_column (str): column that has the reference of longitude
+            of the comparison point
+        user_api_key (str): key of google distance matrix API
+        limit_analysis (bool): if "False", all the rows in the dataset are going
+            to be calculated. If "True", the dataframe needs to have a column
+            "to_analyze". It will calculate the google distance just to the rows
+            that have value "True" in the column "to_analyze".
     """
     # Connect and define options for API
     gmaps = googlemaps.Client(key=user_api_key)

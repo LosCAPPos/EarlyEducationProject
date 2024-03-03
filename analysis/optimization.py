@@ -15,6 +15,22 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
     If "optimized" is True, in each iteration each new child center will be put
     in the census tract that has the higher estimated impact in the dataframe
     as a whole.
+
+    Inputs:
+        user_api_key (str): key of google distance matrix API
+        number_child_centers (int): number of new child centers to allocate
+        optimized (bool): if False, allocate the new child center in the census
+            tract with less access. if True, allocate the new child center in
+            the census tract that has the higher estimated impact in the
+            dataframe as a whole.
+
+    Returns: a tuple with 6 variables:
+        ranking_lst (lst):
+        single_impact_km (lst):
+        single_impact_min (lst):
+        total_benefited_ct (lst):
+        total_impact_km (float):
+        total_impact_min (float):
     """
     df = pd.read_csv("data/final_data_merged.csv")
     new_centers = number_child_centers
@@ -28,25 +44,12 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
         df, benefited_ct, impact_km, impact_min, ranking = create_new_center(
             df, user_api_key, optimized
         )
-        ranking_lst.append(ranking)
+        ranking_lst.append(ranking + 1)
         total_benefited_ct.append(benefited_ct)
         single_impact_km.append(impact_km)
         single_impact_min.append(impact_min)
         total_impact_km += impact_km
         total_impact_min += impact_min
-        print("New Child Center Number: ", i + 1)
-        print("Ranking in Access of the Census Tract: ", ranking + 1)
-        print("Census Tract of the New Child Center: ", benefited_ct[0])
-        print("\n")
-        print("List of Benefited Census Tracks: ", benefited_ct)
-        print("Singular Impact in Km: ", impact_km)
-        print("Singular impact in Minutes: ", impact_min)
-        print("\n")
-        print("List of All Benefited Census Tracks: ", total_benefited_ct)
-        print("Total Impact in Km: ", total_impact_km)
-        print("Total impact in Minutes: ", total_impact_min)
-        print("\n")
-        print("\n")
 
     return (
         ranking_lst,
