@@ -54,7 +54,7 @@ def main(gather_data, googleapi, test):
         spatial_join.assign_ccc_to_ct(test=test)
 
     print("Visualizing Data")
-    app_serv = app
+    app_serv = app.early_education_dash()
     url = "http://127.0.0.1:8000"
     webbrowser.open_new(url)
     app_serv.run_server(debug=True, port=8000, use_reloader=False)
