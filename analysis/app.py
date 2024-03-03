@@ -380,7 +380,7 @@ def update_model_output(centers_input, optimized_dropdown):
         total_benefited_ct,
         total_impact_km,
         total_impact_min,
-    ) = create_several_child_centers("AIzaSyCwiRe6gVTIpQ3GC13JWRjlW1HgtrNeafg", centers_input, optimized)
+    ) = create_several_child_centers("API_KEY", centers_input, optimized)
     output = html.Div(
         [
             html.Div([html.H5("Ranking List: "), ", ".join(ranking_lst)]),
