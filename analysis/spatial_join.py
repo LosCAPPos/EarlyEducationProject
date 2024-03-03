@@ -46,7 +46,7 @@ def prepare_data():
 # See results in .ipynb
 
 
-def assign_ccc_to_ct():
+def assign_ccc_to_ct(test=""):
     """
     This function performs the spatial join between ct and ccc data using
     spatial buffers for the ct centroids. A large buffer size (45km) is used to
@@ -117,4 +117,4 @@ def assign_ccc_to_ct():
     ct_three_ccc = buffer_ccc.groupby("GEOID").head(3)
 
     # Save data as csv
-    ct_three_ccc.to_csv("data/intermediate_data_backup.csv", index=True)
+    ct_three_ccc.to_csv(test + "data/intermediate_data_backup.csv", index=True)

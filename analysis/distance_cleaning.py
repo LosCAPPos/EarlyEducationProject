@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def clean_distance_data():
+def clean_distance_data(test=""):
     """
     This function imputates values to the distance in minutes variable. This is
     done because the Google API provides weird results in some cases. Thus, we
@@ -54,10 +54,10 @@ def clean_distance_data():
     ) * ct_three_ccc["distance_minutes"]
 
     # Save data as csv
-    ct_three_ccc.to_csv("data/census_ccc_joined.csv", index=True)
+    ct_three_ccc.to_csv(test + "data/census_ccc_joined.csv", index=True)
 
 
-def aggregate_at_ct():
+def aggregate_at_ct(test=""):
     """
     This function aggregates the data at the census tract level, getting the min
     and mean for the distance variables, the sum of the capacity of the childcare
@@ -101,10 +101,10 @@ def aggregate_at_ct():
     pre_merge = ct_three_ccc.groupby("GEOID").agg(agg_stats).reset_index()
 
     # Save data as csv
-    pre_merge.to_csv("data/data_pre_merge.csv", index=True)
+    pre_merge.to_csv(test + "data/data_pre_merge.csv", index=True)
 
 
-def socioeconomic_merge():
+def socioeconomic_merge(test=""):
     """
     This function merges the joined census tract and childcare center data (from
     the aggregate_at_ct function) with socioeconomic census cleaned data. Instead
@@ -131,4 +131,4 @@ def socioeconomic_merge():
     )
 
     # Save data as csv (will be used in visualizations and simulations)
-    final_data_merged.to_csv("data/final_data_merged.csv", index=True)
+    final_data_merged.to_csv(test + "data/final_data_merged.csv", index=True)

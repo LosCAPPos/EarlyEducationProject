@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def clean_child_centers():
+def clean_child_centers(test=""):
     """
     Load the data from "data/Child_Care_Centers.csv", eliminate the columns
     that will not be used in the analysis, and save a clean pandas dataframe in
@@ -37,4 +37,4 @@ def clean_child_centers():
     child_centers_df.columns = [x.lower() for x in child_centers_df.columns]
 
     # save the clean dataframe
-    child_centers_df.to_csv("../data/Child_Care_Centers_clean2.csv", index=False)
+    child_centers_df.to_csv(test + "data/Child_Care_Centers_clean2.csv", index=False)

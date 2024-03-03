@@ -11,7 +11,7 @@ def clean_census_data(test=""):
         Save data to data/Census_data.csv
     """
     # retreive raw data
-    census_raw_file = test + "data/Census_data_raw.csv"
+    census_raw_file = "data/Census_data_raw.csv"
     raw_census = pd.read_csv(census_raw_file, dtype=str)
     raw_census[['Tract_name', 'County_name', 'State_name']] = raw_census["DETAILS"].str.split(';', expand=True)
     raw_census.head()

@@ -17,7 +17,7 @@ def get_google_api():
     return user_api_key
 
 
-def get_distance_data():
+def get_distance_data(test=""):
     """
     This function calls get_google_distances to use Google Distance Matrix API
     and get the distance in km and time (minutes) from each census tract centroid
@@ -41,4 +41,4 @@ def get_distance_data():
     )
 
     # Save data as csv
-    ct_three_ccc.to_csv("data/census_ccc_joined_backup.csv", index=True)
+    ct_three_ccc.to_csv(test + "data/census_ccc_joined_backup.csv", index=True)

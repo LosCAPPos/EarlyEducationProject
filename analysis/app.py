@@ -1,5 +1,6 @@
 # Data Visualization
 
+import webbrowser
 import dash
 from dash import html, dcc, Input, Output, State
 import plotly.graph_objects as go
@@ -446,7 +447,9 @@ def update_model_output(n_clicks, centers_input, optimized_dropdown):
     return output
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8000)
+    url = "http://127.0.0.1:8000"
+    webbrowser.open_new(url)
+    app.run_server(debug=True, port=8000, use_reloader=False)
 
 
 
