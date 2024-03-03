@@ -10,7 +10,7 @@ def clean_child_centers():
     Return: None
     """
     # import child center dataframe
-    child_centers_df = pd.read_csv("../data/Child_Care_Centers.csv")
+    child_centers_df = pd.read_csv("data/Child_Care_Centers.csv")
 
     # keep only the data for Illinois
     child_centers_df = child_centers_df[child_centers_df["STATE"] == "IL"]
