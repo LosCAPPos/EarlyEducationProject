@@ -1,7 +1,7 @@
 # Data Visualization
 
 import dash
-from dash import html, dcc, Input, Output
+from dash import html, dcc, Input, Output, State
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
@@ -91,28 +91,40 @@ def create_il_map():
     fig_il = go.Figure(
         data=go.Choropleth(
             geojson=geojson,
-            # Sets the feature identifier key
             featureidkey="properties.GEOID",
-            # Sets the locations in the GeoDataFrame
             locations=gdf["GEOID"],
-            # Uses the index as a placeholder for actual data
-            z=gdf.index,
+            z=gdf.index,  # Assuming this is some measure for coloring
             text=gdf["hover_text"],
             hoverinfo="text",
             colorscale="Blues",
             showscale=False,
-            marker_line_color="white",  # Sets the color of the tract boundaries
-            marker_line_width=0.5,))
+            marker_line_color="white",
+            marker_line_width=0.5,
+        )
+    )
 
+    # Set the map bounds to the extent of the GeoJSON data
     fig_il.update_geos(
-        visible=True, projection_scale=4, center=dict(lat=39.8, lon=-89.6))
+        visible=True,
+        projection_scale=3,  # adjust this value
+        center=dict(lat=39.8, lon=-89.6),  # Adjust the lat/lon as needed
+        fitbounds="locations"
+    )
 
     fig_il.update_layout(
         title_text="Illinois Census Tract Map",
-        geo_scope="usa",
-        margin=dict(l=0, r=0, t=40, b=0),)
+        geo=dict(
+            showframe=False,
+            showcoastlines=False,
+            showcountries=False,
+            showland=False,
+            landcolor="rgba(255, 255, 255, 0)"
+        ),
+        margin=dict(l=0, r=0, t=40, b=0),
+    )
 
     return fig_il
+
 
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
@@ -263,19 +275,22 @@ app.layout = html.Div(
         """,
             style={"margin-top": "20px", "font-size": "1.2em"},
         ),
-        html.H2("Model Simulation", style={"text-align": "center", 
-                                       "margin-top": "40px"}),
-        html.Br(),
-        html.Label("Number of Child Centers"),
-        dcc.Input(id="centers_input", type="number", value=1),
-        html.Br(),
-        html.Label("Do you want to optimize?"),
-        dcc.Dropdown(
-            id="optimized-dropdown",
-            options=[{"label": "Yes", "value": "Yes"}, {"label": "No", 
-                                                        "value": "No"}],
-            value="Yes",),
-        html.Div(id="model_output"),])
+        html.H2("Model Simulation", style={"text-align": "center", "margin-top": "40px"}),
+    html.Br(),
+    html.Label("Number of Child Centers"),
+    dcc.Input(id="centers_input", type="number", value=1),
+    html.Br(),
+    html.Label("Do you want to optimize?"),
+    dcc.Dropdown(
+        id="optimized-dropdown",
+        options=[
+            {"label": "Yes", "value": "Yes"},
+            {"label": "No", "value": "No"}
+        ],
+        value="Yes",
+    ),
+    html.Button('Run Simulation', id='run-simulation-button'),
+    html.Div(id="model_output"),])
 
 
 @app.callback(
@@ -366,13 +381,18 @@ def update_race_bar_graph(value):
 
 @app.callback(
     Output("model_output", "children"),
-    [Input("centers_input", "value"), Input("optimized-dropdown", "value")],
+    [Input("run-simulation-button", "n_clicks")],  # Listen for button click
+    [State("centers_input", "value"), State("optimized-dropdown", "value")],  # Other inputs as states
 )
+
 def update_model_output(centers_input, optimized_dropdown):
+    if n_clicks is None:
+        return ""
+
     if optimized_dropdown == "Yes":
-        optimized = True
+            optimized = True
     else:
-        optimized = False
+            optimized = False
     (
         ranking_lst,
         single_impact_km,
@@ -383,27 +403,27 @@ def update_model_output(centers_input, optimized_dropdown):
     ) = create_several_child_centers("API_KEY", centers_input, optimized)
     output = html.Div(
         [
-            html.Div([html.H5("Ranking List: "), ", ".join(ranking_lst)]),
+            html.Div([html.H5("Ranking List: "), ", ".join(str(v) for v in ranking_lst)]),
             html.Div(
                 [
                     html.H5("Singular Impact List in KM List: "),
-                    ", ".join(single_impact_km),
+                    ", ".join(str(v) for v in single_impact_km),
                 ]
             ),
             html.Div(
-                [html.H5("Singular Impact List in Min: "), ", ".join(single_impact_min)]
+                [html.H5("Singular Impact List in Min: "), ", ".join(str(v) for v in single_impact_min)]
             ),
             html.Div(
                 [
                     html.H5("List of All Benefited Census Tracks: "),
-                    ", ".join(total_benefited_ct),
+                    ", ".join(str(v) for v in total_benefited_ct),
                 ]
             ),
             html.Div(
-                [html.H5("Total Impact in Km List: "), ", ".join(total_impact_km)]
+                [html.H5("Total Impact in Km List: "), ", ".join(str(v) for v in total_impact_km)]
             ),
             html.Div(
-                [html.H5("Total impact in Minutes List: "), ", ".join(total_impact_min)]
+                [html.H5("Total impact in Minutes List: "), ", ".join(str(v) for v in total_impact_min)]
             ),
         ]
     )
