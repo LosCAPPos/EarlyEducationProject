@@ -1,24 +1,27 @@
-from analysis.hav_distance import haversine_distance
-from analysis.google_api_request import get_google_distances
+from hav_distance import haversine_distance
+from google_api_request import get_google_distances
 import numpy as np
 import pandas as pd
 
 
-user_api_key = "insert_your_user_api_key_for_google_matrix_distance"
-
-
 def create_several_child_centers(user_api_key, number_child_centers, optimized):
     """ """
-    df = pd.read_csv("data/final_data_merged.csv")
+    df = pd.read_csv("../data/final_data_merged.csv")
     new_centers = number_child_centers
     total_benefited_ct = []
+    single_impact_km = []
+    single_impact_min = []
+    ranking_lst = []
     total_impact_km = 0
     total_impact_min = 0
     for i in range(new_centers):
         df, benefited_ct, impact_km, impact_min, ranking = create_new_center(
             df, user_api_key, optimized
         )
+        ranking_lst.append(ranking)
         total_benefited_ct.append(benefited_ct)
+        single_impact_km.append(impact_km)
+        single_impact_min.append(impact_min)
         total_impact_km += impact_km
         total_impact_min += impact_min
         print("New Child Center Number: ", i + 1)
@@ -34,6 +37,15 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
         print("Total impact in Minutes: ", total_impact_min)
         print("\n")
         print("\n")
+
+    return (
+        ranking_lst,
+        single_impact_km,
+        single_impact_min,
+        total_benefited_ct,
+        total_impact_km,
+        total_impact_min,
+    )
 
 
 def create_new_center(df, user_api_key, optimized):
