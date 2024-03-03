@@ -42,9 +42,15 @@ def prepare_data():
 
 def assign_ccc_to_ct(ct_gpd, ccc_gpd):
     """
-    This function performs the spatial join between ct and ccc data using spatial buffers for the ct centroids.
-    A large buffer is used to make sure most ct are assigned at least 3 ccc. 
+    This function performs the spatial join between ct and ccc data using
+    spatial buffers for the ct centroids. A large buffer size (45km) is used to
+    make sure most ct are assigned at least 3 ccc. Then, haversine distance is
+    used to filter the three closest ccc for each ct. Resulting data is saved as
+    .csv, so the function does not return anything.
 
+    Inputs:
+        ct_gpd (GeoPandas): census tract data
+        ccc_gpd (GeoPandas): childcare centers data
     """
     # Generate Geo DataFrame with centroids and selected variables (needed for further analysis)
     selected_ct_columns = ['STATEFP', 'COUNTYFP', 'TRACTCE', 'GEOID', 'centroid', 'centroid_lon', 'centroid_lat']
@@ -69,7 +75,7 @@ def assign_ccc_to_ct(ct_gpd, ccc_gpd):
                                                                 row['longitude'],
                                                                 row['centroid_lat'], 
                                                                 row['centroid_lon'],), 
-                                                                axis=1)
+                                                                axis = 1)
 
     # Keep only three closest ccc for each census tract
     buffer_ccc = buffer_ccc.sort_values(by = 'hdistance')
