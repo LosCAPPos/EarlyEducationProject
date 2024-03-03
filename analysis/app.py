@@ -1,16 +1,18 @@
 # Data Visualization
 
 import dash
-from dash import html, dcc, dash_table, Input, Output
+from dash import html, dcc, Input, Output
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import geopandas as gpd
 import json
-# from optimization import create_several_child_centers
+from optimization import create_several_child_centers
+from hav_distance import haversine_distance
+from google_api_request import get_google_distances
 
-file_path = '../data/final_data_merged.csv'
-gdf_path = '../data/tl_2023_17_tract/tl_2023_17_tract.shp'
+file_path = 'data/final_data_merged.csv'
+gdf_path = 'data/tl_2023_17_tract/tl_2023_17_tract.shp'
 
 df_final = pd.read_csv(file_path)
 df_final['TRACTCE'] = df_final['TRACTCE'].astype(str)
@@ -153,18 +155,29 @@ app.layout = html.Div(children=[
         options=[
             {'label': 'Race', 'value': 'race_category'},
             {'label': 'Housing', 'value': 'housing_category'},
-            {'label': 'Education', 'value': 'education_category'}],
+            {'label': 'Education', 'value': 'education_category'}],                # ADD INCOME
         value='race_category'),
     html.Br(),
     dcc.Dropdown(
         id='socioeconomic-factor-y-dropdown',
         options=[
-            {'label': 'Distance Mean Imp', 'value': 'distance_mean_imp'},
-            {'label': 'HDistance Mean', 'value': 'hdistance_mean'}],
+            {'label': 'Distance in Time', 'value': 'distance_mean_imp'},
+            {'label': 'Haversine Distance', 'value': 'hdistance_mean'}],
         value='distance_mean_imp'),
     dcc.Graph(id='correlation-graph'),
     html.P(children='''
-        The graphs present a compelling visual narrative on the disparities in early childhood education (ECE) accessibility among different socioeconomic groups in Illinois. It is evident that communities with lower educational attainment and homeownership rates face greater challenges in accessing nearby childcare facilities, with significantly higher average travel times to the closest ECE centers. Racial demographics also reveal disparities; minority-majority areas, particularly those that are majority Black or Hispanic, experience greater distances to these essential services compared to majority White or Asian areas. These insights are relevant and congruent with our understanding that indeed ECE accessibility in Illinois is influenced by a complex interplay of socioeconomic factors.
+        The graphs present a visual narrative on the disparities in early 
+           childhood education (ECE) accessibility among different socioeconomic 
+           groups in Illinois. It is evident that communities with lower 
+           educational attainment and homeownership rates face greater 
+           challenges in accessing nearby childcare facilities, with 
+           significantly higher average travel times to the closest ECE centers. 
+           Racial demographics also reveal disparities; minority-majority areas, 
+           particularly those that are majority Black or Hispanic, experience 
+           greater distances to these essential services compared to majority 
+           White or Asian areas. These insights are relevant and congruent with 
+           our understanding that indeed ECE accessibility in Illinois is 
+           influenced by a complex interplay of socioeconomic factors.
         ''',
         style={'margin-top': '20px', 'font-size': '1.2em'}), 
 
@@ -242,58 +255,58 @@ def update_race_bar_graph(value):
     return race_bar_graph_figure
 
 
-# @app.callbacks(
-#     Output('model_output', 'children'),
-#     [Input('centers_input', 'value'),
-#      Input('optimized-dropdown', 'value')
-#      ]
-# )
-# def update_model_output(centers_input, optimized_dropdown):
-#     if optimized_dropdown == 'Yes':
-#         optimized = True
-#     else:
-#         optimized = False
-#     ranking_lst, single_impact_km, single_impact_min, total_benefited_ct, total_impact_km, total_impact_min, = create_several_child_centers(
-#         "API KEY", centers_input, optimized)
-#     output = html.Div([
-#         html.Div(
-#             [
-#                 html.H5("Ranking List: "),
-#                 ', '.join(ranking_lst)
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 html.H5("Singular Impact List in KM List: "),
-#                 ', '.join(single_impact_km)
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 html.H5("Singular Impact List in Min: "),
-#                 ', '.join(single_impact_min)
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 html.H5("List of All Benefited Census Tracks: "),
-#                 ', '.join(total_benefited_ct)
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 html.H5("Total Impact in Km List: "),
-#                 ', '.join(total_impact_km)
-#             ]
-#         ),
-#         html.Div(
-#             [
-#                 html.H5("Total impact in Minutes List: "),
-#                 ', '.join(total_impact_min)
-#             ]
-#         ),
-#     ])
-#     return output
+@app.callback(
+    Output('model_output', 'children'),
+    [Input('centers_input', 'value'),
+     Input('optimized-dropdown', 'value')
+     ]
+)
+def update_model_output(centers_input, optimized_dropdown):
+    if optimized_dropdown == 'Yes':
+        optimized = True
+    else:
+        optimized = False
+    ranking_lst, single_impact_km, single_impact_min, total_benefited_ct, total_impact_km, total_impact_min, = create_several_child_centers(
+        "API KEY", centers_input, optimized)
+    output = html.Div([
+        html.Div(
+            [
+                html.H5("Ranking List: "),
+                ', '.join(ranking_lst)
+            ]
+        ),
+        html.Div(
+            [
+                html.H5("Singular Impact List in KM List: "),
+                ', '.join(single_impact_km)
+            ]
+        ),
+        html.Div(
+            [
+                html.H5("Singular Impact List in Min: "),
+                ', '.join(single_impact_min)
+            ]
+        ),
+        html.Div(
+            [
+                html.H5("List of All Benefited Census Tracks: "),
+                ', '.join(total_benefited_ct)
+            ]
+        ),
+        html.Div(
+            [
+                html.H5("Total Impact in Km List: "),
+                ', '.join(total_impact_km)
+            ]
+        ),
+        html.Div(
+            [
+                html.H5("Total impact in Minutes List: "),
+                ', '.join(total_impact_min)
+            ]
+        ),
+    ])
+    return output
 
 
 if __name__ == '__main__':
