@@ -6,10 +6,10 @@ from analysis.hav_distance import haversine_distance
 
 def prepare_data():
     """
-    This function loads and prepares the census tract (ct) shapefile and childcare center (ccc) 
-    data for the spatial join. This implies turning both of them in GeoPandas,
-    creating centroids and getting the coordinates for the ct shapefile, and 
-    setting a common CRS for both GeoPandas dataframes.
+    This function loads and prepares the census tract (ct) shapefile and 
+    childcare center (ccc) data for the spatial join. This implies turning both
+    of them in GeoPandas, creating centroids and getting the coordinates for the
+    ct shapefile, and setting a common CRS for both GeoPandas dataframes.
 
     Returns:
         ct (GeoPandas): prepared census tract data
@@ -40,7 +40,7 @@ def prepare_data():
 ## Intermediate analysis: Assign each CCC to the census tract it belongs to ##
 # See results in .ipynb
 
-def assign_ccc_to_ct(ct_gpd, ccc_gpd):
+def assign_ccc_to_ct():
     """
     This function performs the spatial join between ct and ccc data using
     spatial buffers for the ct centroids. A large buffer size (45km) is used to
@@ -52,6 +52,9 @@ def assign_ccc_to_ct(ct_gpd, ccc_gpd):
         ct_gpd (GeoPandas): census tract data
         ccc_gpd (GeoPandas): childcare centers data
     """
+    # Call prepare_data to get GeoDataFrames
+    ct_gpd, ccc_gpd = prepare_data()
+
     # Generate Geo DataFrame with centroids and selected variables (needed for further analysis)
     selected_ct_columns = ['STATEFP', 'COUNTYFP', 'TRACTCE', 'GEOID', 'centroid', 'centroid_lon', 'centroid_lat']
     ct_buffer = gpd.GeoDataFrame(ct_gpd[selected_ct_columns], geometry = 'centroid').copy()
