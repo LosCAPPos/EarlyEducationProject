@@ -55,7 +55,7 @@ def create_us_map():
                 "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
                 "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
                 "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-                "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",],
+                "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"],
             "Capacity_Percentage": [60,61,48,35,60,61,51,44,38,44,
                 68,49,58,55,23,44,50,42,22,51,
                 53,44,26,48,54,60,28,72,46,46,
