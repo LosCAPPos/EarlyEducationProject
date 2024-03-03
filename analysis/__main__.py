@@ -1,14 +1,19 @@
 from analysis import census_api, census_clean, child_centers_clean
-#from analysis import distance_matrix_api
+from analysis import distance_matrix_api
 from analysis import distance_cleaning, spatial_join
-from analysis import optimization, app
+from analysis import app
 import click
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 @click.command()
 @click.option("--googleapi", default=False, help="Run Google Distance API", type=bool)
+@click.option("--gather_data", default=True, help="Run data clean and gather", type=bool)
 
-def main(googleapi):
+
+def main(gather_data, googleapi):
     """
     Runs the retrieval and cleaning of the data in this order:
     1. Census Data (retreive and clean)
@@ -23,18 +28,17 @@ def main(googleapi):
     Returns:
         Graphs
     """
-    census_api
-    census_clean
+    if gather_data:
+        census_api
+        census_clean
     
-    child_centers_clean
+        child_centers_clean
     
-    if googleapi:
-        distance_matrix_api
-    distance_cleaning
+        if googleapi:
+            distance_matrix_api
+        distance_cleaning
     
-    spatial_join
-    
-    optimization
+        spatial_join
     
     app
 
