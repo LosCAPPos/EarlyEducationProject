@@ -3,6 +3,7 @@ import googlemaps
 from datetime import datetime
 from analysis.google_api_request import get_google_distances
 
+
 def get_google_api():
     """
     This function gets the Google API key from Google_distance_API_key.txt file.
@@ -24,16 +25,20 @@ def get_distance_data():
     file
     """
     # Open data as pandas
-    ct_three_ccc = pd.read_csv('data/intermediate_data_backup.csv')
-    
+    ct_three_ccc = pd.read_csv("data/intermediate_data_backup.csv")
+
     # Get Google Distance Matrix API key
     user_api_key = get_google_api()
 
     # Get distance variables and add them to the dataframe
-    get_google_distances(ct_three_ccc,
-                         'distance_km', 'distance_minutes',
-                         'latitude', 'longitude',
-                         user_api_key)
+    get_google_distances(
+        ct_three_ccc,
+        "distance_km",
+        "distance_minutes",
+        "latitude",
+        "longitude",
+        user_api_key,
+    )
 
     # Save data as csv
-    ct_three_ccc.to_csv('data/census_ccc_joined_backup.csv', index = True)
+    ct_three_ccc.to_csv("data/census_ccc_joined_backup.csv", index=True)
