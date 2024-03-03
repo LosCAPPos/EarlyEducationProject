@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 
 # testing if it runs in Terminal, keep empty when done
-test_folder = ""
+test_folder = "test/"
 
 # retreive raw data
 census_raw_file = test_folder + "data/Census_data_raw.csv"

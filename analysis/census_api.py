@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 
 # testing if it runs in Terminal, keep empty when done
-test_folder = ""
+test_folder = "test/"
 
 # retrieve Census API Key
 CensusAPI_fn = "CensusAPI_key.txt"

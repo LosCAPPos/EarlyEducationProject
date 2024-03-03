@@ -7,14 +7,12 @@ Use Google Directions API to get the distance in km and time (minutes) from
 each census tract centroid to each of its assigned chilcare centers
 """
 # Open data as pandas (just in case)
-ct_three_ccc = pd.read_csv('../data/intermediate_data_backup.csv')
+ct_three_ccc = pd.read_csv('data/intermediate_data_backup.csv')
 
-"""
 # Read api_key from .txt (needs to be filled)
 GoogleAPI_fn = "Google_distance_API_key.txt"
 with open(GoogleAPI_fn, "r") as file:
     user_api_key = file.readline().strip()
-"""
 
 # Create empty coluns to be filled
 ct_three_ccc['distance_km'] = 0.0
@@ -55,4 +53,4 @@ for i, row in ct_three_ccc.iterrows():
         break
 
 # Save data as csv
-ct_three_ccc.to_csv('../data/census_ccc_joined_backup.csv', index = True)
+ct_three_ccc.to_csv('data/census_ccc_joined_backup.csv', index = True)

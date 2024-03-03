@@ -1,5 +1,5 @@
-from hav_distance import haversine_distance
-from google_api_request import get_google_distances
+from analysis.hav_distance import haversine_distance
+from analysis.google_api_request import get_google_distances
 import numpy as np
 import pandas as pd
 

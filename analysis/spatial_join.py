@@ -7,11 +7,11 @@
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from hav_distance import haversine_distance
+from analysis.hav_distance import haversine_distance
 
 # Read and prepare data
-ct = gpd.read_file('../data/tl_2023_17_tract/tl_2023_17_tract.shp') # Census Tracts (ct)
-ccc_il = pd.read_csv('../data/Child_Care_Centers_clean.csv') # ChilCareCenters (ccc)
+ct = gpd.read_file('data/tl_2023_17_tract/tl_2023_17_tract.shp') # Census Tracts (ct)
+ccc_il = pd.read_csv('data/Child_Care_Centers_clean.csv') # ChilCareCenters (ccc)
 
 # Calculate centroids and add coordinates as new columns to the original 
 # census tract Geo DataFrame
@@ -106,4 +106,4 @@ summary_table.columns = ['Number of Points Joined', 'Number of Polygons']
 #print(summary_table)
 
 # Save data as csv
-ct_three_ccc.to_csv('../data/intermediate_data_backup.csv', index = True)
+ct_three_ccc.to_csv('data/intermediate_data_backup.csv', index = True)
