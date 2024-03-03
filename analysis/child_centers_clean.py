@@ -1,4 +1,3 @@
-import pathlib
 import pandas as pd
 
 
@@ -11,8 +10,7 @@ def clean_child_centers():
     Return: None
     """
     # import child center dataframe
-    parent_path = pathlib.Path(__file__).parent.parent
-    child_centers_df = pd.read_csv(parent_path.joinpath("data/Child_Care_Centers.csv"))
+    child_centers_df = pd.read_csv("../data/Child_Care_Centers.csv")
 
     # keep only the data for Illinois
     child_centers_df = child_centers_df[child_centers_df["STATE"] == "IL"]
@@ -39,4 +37,4 @@ def clean_child_centers():
     child_centers_df.columns = [x.lower() for x in child_centers_df.columns]
 
     # save the clean dataframe
-    child_centers_df.to_csv("data/Child_Care_Centers_clean.csv", index=False)
+    child_centers_df.to_csv("../data/Child_Care_Centers_clean2.csv", index=False)
