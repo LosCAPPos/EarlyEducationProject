@@ -415,7 +415,7 @@ def early_education_dash():
         if value != "Race Analysis":
             race_percentages = df_final.groupby("race_category")[current_analysis].mean().reset_index()
             long_race = pd.melt(race_percentages, id_vars=['race_category'], value_vars=current_analysis)
-            custom_labels = [f"Mean {current_analysis_labels[current_analysis.index(row["variable"])]} for {row["race_category"]} Tracts" 
+            custom_labels = [f"Mean {current_analysis_labels[current_analysis.index(row["variable"])]} for {row["race_category"]} Tracts" \
                              for _, row in long_race.iterrows()]
             y_val = 100*long_race["value"]
             text_val = [f"{val:.2f}%" for val in 100*long_race["value"].astype(float)]
