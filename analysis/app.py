@@ -50,6 +50,8 @@ race_mapping = {
 for race_col, race_name in race_mapping.items():
     df_final.loc[df_final[race_col] == 1, "race_category"] = race_name
 
+
+# Categorizes homeowner rate and education level into bins for analysis
 df_final["housing_category"] = pd.cut(
     df_final["homeowner_rate"],
     bins=[-1, 0.5, 1],
@@ -362,6 +364,7 @@ def early_education_dash():
         ]
     )
 
+    # Callback for updating the correlation graph based on dropdown selections
     @app.callback(
         Output("correlation-graph", "figure"),
         [
@@ -370,12 +373,16 @@ def early_education_dash():
         ],
     )
     def update_graph(selected_factor, y_col):
+        """
+        Updates and returns the correlation graph figure based on selected 
+        socioeconomic factors and the chosen measurement for distance to ECCs.
+        """
         fig = px.box(
             df_final,
             x=selected_factor,
             y=y_col,
             labels={"distance_mean_imp": "Average Distance to Closest 3 ECC (minutes)"},
-            notched=True,
+            notched=True,   # Visual indication of median's confidence interval
         )
 
         fig.update_traces(marker_color="#1f77b4")
@@ -388,11 +395,17 @@ def early_education_dash():
 
         return fig
 
+    # Callback for updating the demographic analysis graph
     @app.callback(
         Output("race-bar-graph", "figure"),
         [Input("socioeconomic-factor-dropdown_1", "value")],
     )
     def update_race_bar_graph(value):
+        """
+        Updates and returns the race bar graph figure based on the selected 
+        analysis category. 
+        """
+        # Determines analysis category and data based on user selection
         if value == "Race Analysis":
             current_analysis = [
                 "majority_white",
@@ -447,18 +460,36 @@ def early_education_dash():
 
     @app.callback(
         Output("model_output", "children"),
-        [Input("run-simulation-button", "n_clicks")],  # Listen for button click
+        [Input("run-simulation-button", "n_clicks")], 
         [
             State("centers_input", "value"),
             State("optimized_dropdown", "value"),
-        ],  # Other inputs as states
+        ],  
     )
     def update_model_output(n_clicks, centers_input, optimized_dropdown):
+        """
+        Updates the model output text based on simulation button clicks,
+        number of child centers, and optimization choice. Invokes the simulation 
+        to determine optimal locations for establishing early childcare centers 
+        based on user inputs and utilizing the `create_several_child_centers` 
+        function from the `analysis.optimization` module.
+        
+        Inputs:
+            n_clicks (int): Number of times simulation button has been clicked.
+            centers_input (int): Number of ECC to consider in simulation.
+            optimized_dropdown (str): User's choice on whether to optimize.
+            
+        Returns:
+            dash.html.Div: A Dash HTML Div element containing the simulation 
+                textual output. 
+        """
         if n_clicks is None or centers_input is None:
-            # No clicks means no simulation run
             return ""
+        
+        # Convert dropdown selection to boolean for optimization parameter
         optimized = True if optimized_dropdown == "Yes" else False
 
+        # In order for simulation to work, change with own API_KEY
         (
             ranking_lst,
             single_impact_km,
@@ -508,5 +539,7 @@ if __name__ == "__main__":
     app.run_server(debug=True, port=8000, use_reloader=False)
 
 
-# REFERENCES: # https://plotly.com/python/bar-charts/
-# https://plotly.com/python/county-choropleth/
+# REFERENCES: 
+    # https://plotly.com/python/bar-charts/
+    # https://plotly.com/python/county-choropleth/
+    # https://jen-hsuan-hsieh.gitbook.io/python/chapter-2courses/21python-for-data-science-and-machine-learning-bootcamp/dsad/2191chropleth-maps-usa
