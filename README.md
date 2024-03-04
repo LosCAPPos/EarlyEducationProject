@@ -1,6 +1,6 @@
 # <center> <span style="color:maroon;"> Early Education Project</span></center>
 
-<center> a CAPP 122 Final Project by
+### <center> a CAPP 122 Final Project by
 
 [Elena Porfidia](https://github.com/elenaporfidia)  
 [Joaquin Pinto](https://github.com/joaqpinto)  
