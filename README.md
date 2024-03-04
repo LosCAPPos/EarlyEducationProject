@@ -2,10 +2,10 @@
 
 <center> a CAPP 122 Final Project by
 
-Elena Porfidia  
-Joaquin Pinto  
-Miguel Perez  
-Rodrigo Rivarola</center>
+[Elena Porfidia](https://github.com/elenaporfidia)  
+[Joaquin Pinto](https://github.com/joaqpinto)  
+[Miguel Perez](https://github.com/miguelperez94)  
+[Rodrigo Rivarola](https://github.com/rjrivarola)</center>
 
 ### <span style="color:maroon;"> About our Project </span>
 
