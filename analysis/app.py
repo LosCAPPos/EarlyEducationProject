@@ -17,7 +17,8 @@ gdf_path = "data/tl_2023_17_tract/tl_2023_17_tract.shp"
 df_final = pd.read_csv(file_path)
 df_final["GEOID"] = df_final["GEOID"].astype(str)
 
-# Reads the shapefile data into a GeoDataFrame
+# Reads the shapefile data into a GeoDataFrame based on GEOID. 
+# Loads and merges with DataFrame to associate it with the geographic locations
 gdf = gpd.read_file(gdf_path)
 gdf["GEOID"] = gdf["GEOID"].astype(str)
 gdf = gdf.merge(
@@ -26,7 +27,7 @@ gdf = gdf.merge(
     how="left",
 )
 
-# Merges the DataFrame with the GeoDataFrame based on GEOID
+# Generates hover text and combines data points for each geographic unit
 gdf["hover_text"] = gdf.apply(
     lambda row: (
         f'Census Tract Code: {row["GEOID"]}<br>'
@@ -40,7 +41,7 @@ gdf["hover_text"] = gdf.apply(
 
 geojson = json.loads(gdf.to_json())     # Converts to GEOJSON for plotting
 
-
+# Maps from column values to more "human-readable" category names
 race_mapping = {
     "majority_white": "Majority White",
     "majority_black": "Majority Black",
@@ -50,14 +51,12 @@ race_mapping = {
 for race_col, race_name in race_mapping.items():
     df_final.loc[df_final[race_col] == 1, "race_category"] = race_name
 
-
 # Categorizes homeowner rate and education level into bins for analysis
 df_final["housing_category"] = pd.cut(
     df_final["homeowner_rate"],
     bins=[-1, 0.5, 1],
     labels=["Lower Homeownership", "Higher Homeownership"],
 )
-
 df_final["education_category"] = pd.cut(
     df_final["higher_education_rate"],
     bins=[-1, 0.5, 1],
@@ -83,7 +82,7 @@ def create_us_map():
                               68, 49, 58, 55, 23, 44, 50, 42, 22, 51,
                               53, 44, 26, 48, 54, 60, 28, 72, 46, 46,
                               53, 64, 44, 24, 39, 55, 60, 57, 47, 42,
-                              43, 48, 48, 77, 35, 47, 63, 64, 54, 34]
+                              43, 48, 48, 77, 35, 47, 63, 64, 54, 34,]
     })
 
     # Adds hover text for each state with ECC Desert Percentage
@@ -92,16 +91,17 @@ def create_us_map():
         axis=1,
     )
 
+    # Creates choropleth map using Plotly with States' ECC desert percentage
     fig = go.Figure(
         data=go.Choropleth(
             locations=df["State"],
-            z=df["Deserts"].astype(float),
+            z=df["Deserts"].astype(float), # Criteria for color coding
             locationmode="USA-states",
             colorscale="Blues",
-            text=df["hover_text"],
+            text=df['hover_text'], 
             hoverinfo="text",  # Only shows the hover text
             showscale=True,
-            marker_line_color="white",
+            marker_line_color="white",  # Color for borders
             marker_line_width=0.5,
         )
     )
@@ -132,12 +132,12 @@ def create_il_map():
         data=go.Choropleth(
             geojson=geojson,
             featureidkey="properties.GEOID",
-            locations=gdf["GEOID"],   # Uses the GEOID for mapping each tract
-            z=gdf["distance_min_imp"],  # 'distance_min_imp' for color coding
+            locations=gdf["GEOID"],  # Uses the GEOID for mapping each tract
+            z=gdf["distance_min_imp"],  # Minimum distance for color coding
             text=gdf["hover_text"],
             hoverinfo="text",
-            colorscale="Blues",
-            colorbar_title="Distance to ECC<br>(min)",
+            colorscale="Blues",  
+            colorbar_title="Distance to ECC<br>(min)", 
             marker_line_color="white",
             marker_line_width=0.1,
         )
@@ -147,18 +147,19 @@ def create_il_map():
     fig_il.update_geos(
         visible=True,
         projection_scale=3,  
-        center=dict(lat=39.8, lon=-89.6),  
-        fitbounds="locations",
+        center=dict(lat=39.8, lon=-89.6), 
+        fitbounds="locations"
     )
 
     fig_il.update_layout(
         title_text="Exploring Distances to Closest Early Childcare Centers",
         geo=dict(
+            # Hides irrelevant features such as coast, neighbouring States, ...
             showframe=False,
             showcoastlines=False,
             showcountries=False,
             showland=False,
-            landcolor="rgba(255, 255, 255, 0)",
+            landcolor="rgba(255, 255, 255, 0)"
         ),
         margin=dict(l=0, r=0, t=40, b=0),
     )
@@ -182,13 +183,12 @@ def early_education_dash():
     app.layout = html.Div(
         children=[
             html.H1(
-                children="""Bridging the Gap: Enhancing Early Childhood 
-                Education Access in Illinois""",
+                children='''Bridging the Gap: Enhancing Early Childhood 
+                Education Access in Illinois''',
                 style={
                     "font-size": "2.5em",
                     "text-align": "center",
-                    "margin-bottom": "20px",
-                },
+                    "margin-bottom": "20px",},
             ),
             html.Div(
                 children="""
@@ -223,7 +223,8 @@ def early_education_dash():
                 style={"text-align": "center", "margin-bottom": "10px"},
             ),
             dcc.Graph(
-                id="us-map", config={"displayModeBar": False}, figure=create_us_map()
+                id="us-map", config={"displayModeBar": False}, 
+                figure=create_us_map()
             ),
             html.Div(
                 children="""
@@ -243,11 +244,11 @@ def early_education_dash():
                 style={
                     "text-align": "center",
                     "margin-top": "40px",
-                    "margin-bottom": "10px",
-                },
+                    "margin-bottom": "10px",},
             ),
             dcc.Graph(
-                id="il-map", config={"displayModeBar": False}, figure=create_il_map()
+                id="il-map", config={"displayModeBar": False}, 
+                figure=create_il_map()
             ),
             html.Div(
                 children="""
@@ -267,9 +268,8 @@ def early_education_dash():
                 style={"margin-top": "20px", "font-size": "1.2em"},
             ),
             html.H2(
-                "Demographic Dynamics",
-                style={"text-align": "center", "margin-top": "40px"},
-            ),
+                "Demographic Dynamics", style={"text-align": "center", 
+                                               "margin-top": "40px"}),
             dcc.Dropdown(
                 id="socioeconomic-factor-dropdown_1",
                 options=["Race", "Housing", "Education", "Income"],
@@ -299,16 +299,21 @@ def early_education_dash():
                 options=[
                     {"label": "Race", "value": "race_category"},
                     {"label": "Housing", "value": "housing_category"},
-                    {"label": "Education", "value": "education_category"},
-                ],  # ADD INCOME
+                    {"label": "Education", "value": "education_category"},],
                 value="race_category",
             ),
             html.Br(),
             dcc.Dropdown(
                 id="socioeconomic-factor-y-dropdown",
                 options=[
-                    {"label": "Distance in Time", "value": "distance_mean_imp"},
-                    {"label": "Haversine Distance", "value": "hdistance_mean"},
+                    {"label": "Average Distance in Time to Closest 3 ECCs", 
+                     "value": "distance_mean_imp"},
+                    {"label": "Average Haversine Distance to Closest 3 ECCs", 
+                     "value": "hdistance_mean"},
+                    {"label": "Minimum Distance in Time to Closest ECC", 
+                     "value": "distance_min_imp"},
+                    {"label": "Minimum Haversine Distance to Closest ECC", 
+                     "value": "hdistance_min"},
                 ],
                 value="distance_mean_imp",
             ),
@@ -326,15 +331,13 @@ def early_education_dash():
             these essential services compared to majority White or Asian areas. 
             These insights are relevant and congruent with our understanding 
             that indeed ECE accessibility in Illinois is influenced by a complex 
-            interplay of socioeconomic factors.
+            interplay of a variety of socioeconomic factors.
             """,
                 style={"margin-top": "20px", "font-size": "1.2em"},
             ),
-            html.H2(
-                "Model Simulation", style={"text-align": "center", "margin-top": "40px"}
-            ),
-            html.P(
-                children="""
+            html.H2("Model Simulation", style={"text-align": "center", 
+                                               "margin-top": "40px"}),
+            html.P(children="""
             The proposed simulation model will enable us to forecast the effects 
             of introducing more ECCs, particularly in underserved areas. By 
             integrating this model, we can dynamically update our database, 
@@ -343,9 +346,8 @@ def early_education_dash():
             on the ways in which more inclusive child care infrastructures may 
             be positioned, creating settings in which every family has a better
             chance to prosper. It is now up to you to experiment and learn more 
-            about this through our platform!    
-            """
-            ),
+            about this through our platform!  
+            """),
             html.Br(),
             html.Label("Number of Child Centers"),
             dcc.Input(id="centers_input", type="number", value=1),
@@ -355,47 +357,15 @@ def early_education_dash():
                 id="optimized_dropdown",
                 options=[
                     {"label": "Yes", "value": "Yes"},
-                    {"label": "No", "value": "No"},
+                    {"label": "No", "value": "No"}
                 ],
                 value="True",
             ),
-            html.Button("Run Simulation", id="run-simulation-button"),
-            html.Div(id="model_output"),
-        ]
-    )
+            html.Button('Run Simulation', id='run-simulation-button'),
+            html.Div(id="model_output"),])
 
-    # Callback for updating the correlation graph based on dropdown selections
-    @app.callback(
-        Output("correlation-graph", "figure"),
-        [
-            Input("socioeconomic-factor-dropdown", "value"),
-            Input("socioeconomic-factor-y-dropdown", "value"),
-        ],
-    )
-    def update_graph(selected_factor, y_col):
-        """
-        Updates and returns the correlation graph figure based on selected 
-        socioeconomic factors and the chosen measurement for distance to ECCs.
-        """
-        fig = px.box(
-            df_final,
-            x=selected_factor,
-            y=y_col,
-            labels={"distance_mean_imp": "Average Distance to Closest 3 ECC (minutes)"},
-            notched=True,   # Visual indication of median's confidence interval
-        )
 
-        fig.update_traces(marker_color="#1f77b4")
-        fig.update_layout(
-            title="""Average Distance to Nearest Childcare Centers Among Different Socioeconomic Groups""",
-            yaxis_title="Distance to Closest ECC (in minutes)",
-            xaxis_title=selected_factor.replace("_", " ").title(),
-            boxmode="group",
-        )
-
-        return fig
-
-    # Callback for updating the demographic analysis graph
+    # Callback for updating the Demographic Dynamics graph
     @app.callback(
         Output("race-bar-graph", "figure"),
         [Input("socioeconomic-factor-dropdown_1", "value")],
@@ -405,20 +375,22 @@ def early_education_dash():
         Updates and returns the race bar graph figure based on the selected 
         analysis category. 
         """
-        # Determines analysis category and data based on user selection
-        if value == "Race Analysis":
-            current_analysis = [
+        default_analysis = [
                 "majority_white",
                 "majority_black",
                 "majority_hispanic",
                 "majority_asian",
             ]
-            current_analysis_labels = [
+        default_labels = [
                 "Majority White",
                 "Majority Black",
                 "Majority Hispanic",
                 "Majority Asian",
             ]
+        # Determines analysis category and data based on user selection
+        if value == "Race Analysis":
+            current_analysis = default_analysis
+            current_analysis_labels = default_labels
         elif value == "Housing":
             current_analysis = ["homeowner_rate", "mobility_rate"]
             current_analysis_labels = ["Homeowner Rate", "Mobility Rate"]
@@ -431,6 +403,10 @@ def early_education_dash():
         elif value == "Income":
             current_analysis = ["below_poverty_rate"]
             current_analysis_labels = ["Below Poverty Rate"]
+        else:
+            value == "Income"
+            current_analysis = default_analysis
+            current_analysis_labels = default_labels
 
         majority_counts = df_final[current_analysis].sum()
         total_tracts = len(df_final)
@@ -458,16 +434,48 @@ def early_education_dash():
 
         return race_bar_graph_figure
 
+
+    # Callback for updating the Early Education Accessibility graph
+    @app.callback(
+        Output("correlation-graph", "figure"),
+        [
+            Input("socioeconomic-factor-dropdown", "value"),
+            Input("socioeconomic-factor-y-dropdown", "value"),
+        ],
+    )
+    def update_graph(selected_factor, y_col):
+        """
+        Updates and returns the correlation graph figure based on selected 
+        socioeconomic factors and the chosen measurement for distance to ECCs.
+        """
+        fig = px.box(
+            df_final,
+            x=selected_factor,
+            y=y_col,
+            labels={"distance_mean_imp": "Distance to Closest ECCs"},
+            notched=True,   # Visual indication of median's confidence interval
+        )
+
+        fig.update_traces(marker_color="#1f77b4")
+        fig.update_layout(
+            title="""Average Distance to Nearest Childcare Centers Among Different Socioeconomic Groups""",
+            yaxis_title="Distance to Closest ECCs",
+            xaxis_title=selected_factor.replace("_", " ").title(),
+            boxmode="group",
+        )
+
+        return fig
+
+
+    # Callback for updating Model Simulation
     @app.callback(
         Output("model_output", "children"),
-        [Input("run-simulation-button", "n_clicks")], 
-        [
-            State("centers_input", "value"),
-            State("optimized_dropdown", "value"),
-        ],  
+        [Input("run-simulation-button", "n_clicks")],  # Listen for button click
+        [State("centers_input", "value"), State("optimized_dropdown", "value")],  # Other inputs as states
     )
+
     def update_model_output(n_clicks, centers_input, optimized_dropdown):
-        """
+        '''
         Updates the model output text based on simulation button clicks,
         number of child centers, and optimization choice. Invokes the simulation 
         to determine optimal locations for establishing early childcare centers 
@@ -482,12 +490,12 @@ def early_education_dash():
         Returns:
             dash.html.Div: A Dash HTML Div element containing the simulation 
                 textual output. 
-        """
+        '''
         if n_clicks is None or centers_input is None:
             return ""
         
         # Convert dropdown selection to boolean for optimization parameter
-        optimized = True if optimized_dropdown == "Yes" else False
+        optimized = True if optimized_dropdown == 'Yes' else False
 
         # In order for simulation to work, change with own API_KEY
         (
@@ -501,17 +509,18 @@ def early_education_dash():
         output = html.Div(
             [
                 html.Div(
-                    [html.H5("Ranking List: "), ", ".join(str(v) for v in ranking_lst)]
+                    [html.H5("Ranking List of Census Tracts: "), ", \
+                     ".join(str(v) for v in ranking_lst)]
                 ),
                 html.Div(
                     [
-                        html.H5("Singular Impact List in KM List: "),
+                        html.H5("Singular Impact in KM for Each New ECC: "),
                         ", ".join(str(v) for v in single_impact_km),
                     ]
                 ),
                 html.Div(
                     [
-                        html.H5("Singular Impact List in Min: "),
+                        html.H5("Singular Impact in Min for Each New ECC: "),
                         ", ".join(str(v) for v in single_impact_min),
                     ]
                 ),
@@ -521,14 +530,15 @@ def early_education_dash():
                         ", ".join(str(v) for v in total_benefited_ct),
                     ]
                 ),
-                html.Div([html.H5("Total Impact in Km: "), str(total_impact_km)]),
+                html.Div([html.H5("Total Impact in KM: "), str(total_impact_km)
+                          ]),
                 html.Div(
-                    [html.H5("Total impact in Minutes List: "), str(total_impact_min)]
+                    [html.H5("Total Impact in Minutes: "), str(total_impact_min)
+                     ]
                 ),
             ]
         )
         return output
-
     return app
 
 
