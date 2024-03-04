@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Data Visualization
 
 import webbrowser
@@ -5,7 +6,10 @@ import dash
 from dash import html, dcc, Input, Output, State
 import plotly.graph_objects as go
 import plotly.express as px
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import pandas as pd
+import numpy as np
 import geopandas as gpd
 import json
 from analysis.optimization import create_several_child_centers
@@ -404,23 +408,38 @@ def early_education_dash():
             current_analysis = ["below_poverty_rate"]
             current_analysis_labels = ["Below Poverty Rate"]
         else:
-            value == "Income"
+            value == "Race Analysis"
             current_analysis = default_analysis
             current_analysis_labels = default_labels
 
-        majority_counts = df_final[current_analysis].sum()
-        total_tracts = len(df_final)
-        race_percentages = (majority_counts / total_tracts) * 100
-
-        custom_labels = current_analysis_labels
+        if value != "Race Analysis":
+            race_percentages = df_final.groupby("race_category")[current_analysis].mean().reset_index()
+            long_race = pd.melt(race_percentages, id_vars=['race_category'], value_vars=current_analysis)
+            custom_labels = [f"Mean {current_analysis_labels[current_analysis.index(row["variable"])]} for {row["race_category"]} Tracts" 
+                             for _, row in long_race.iterrows()]
+            y_val = 100*long_race["value"]
+            text_val = [f"{val:.2f}%" for val in 100*long_race["value"].astype(float)]
+        else:
+            majority_counts = df_final[current_analysis].sum()
+            total_tracts = len(df_final)
+            race_percentages = (majority_counts / total_tracts) * 100
+            custom_labels = current_analysis_labels
+            y_val = race_percentages
+            text_val = [f"{val:.2f}%" for val in race_percentages.values]
+            
+        # Define a color palette with 8 colors
+        palette = plt.cm.get_cmap('Blues', 8)
+        # Convert RGB colors to hexadecimal format
+        hex_colors = [mcolors.to_hex(color) for color in palette(range(8))]
+        
         race_bar_graph_figure = go.Figure(
             [
                 go.Bar(
-                    x=custom_labels,
-                    y=race_percentages.values,
-                    text=[f"{val:.2f}%" for val in race_percentages.values],
+                    x = custom_labels,
+                    y=y_val,
+                    text = text_val,
                     textposition="auto",
-                    marker_color=["#1f77b4", "#aec7e8", "#3498db", "#5dade2"],
+                    marker_color=hex_colors,
                 )
             ]
         )
@@ -433,6 +452,7 @@ def early_education_dash():
         )
 
         return race_bar_graph_figure
+
 
 
     # Callback for updating the Early Education Accessibility graph
