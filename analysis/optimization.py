@@ -1,5 +1,6 @@
 from analysis.hav_distance import haversine_distance
 from analysis.google_api_request import get_google_distances
+from analysis.distance_matrix_api import get_google_api
 import numpy as np
 import pandas as pd
 
@@ -37,8 +38,11 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
     """
     # import database
     df = pd.read_csv("data/final_data_merged.csv")
+    
+    if user_api_key == "API_KEY":
+        user_api_key = get_google_api()
 
-    # auxiliar variables to return
+        # auxiliar variables to return
     total_benefited_ct = []
     single_impact_km = []
     single_impact_min = []
@@ -95,6 +99,9 @@ def create_new_center(df, user_api_key, optimized):
         ranking (int): ranking value (int) of the census tract related to its
             previous distance to the closest child center
     """
+    if user_api_key == "API_KEY":
+        user_api_key = get_google_api()
+    
     # return variables: impact in reduced kilometers and reduced minutes
     impact_km = 0
     impact_min = 0
