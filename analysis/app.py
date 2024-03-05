@@ -507,7 +507,7 @@ def early_education_dash():
                 ),
                 html.Div(
                     [
-                        html.H5("List of All Benefited Census Tracks: "),
+                        html.H5("List of All Benefited Census Tracts: "),
                         ", ".join(str(v) for v in total_benefited_ct),
                     ]
                 ),
