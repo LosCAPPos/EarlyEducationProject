@@ -62,14 +62,8 @@ def create_several_child_centers(user_api_key, number_child_centers, optimized):
         total_impact_km += impact_km
         total_impact_min += impact_min
 
-    return (
-        ranking_lst,
-        single_impact_km,
-        single_impact_min,
-        total_benefited_ct,
-        total_impact_km,
-        total_impact_min,
-    )
+    return (ranking_lst,single_impact_km,single_impact_min,total_benefited_ct,
+        total_impact_km,total_impact_min)
 
 
 def create_new_center(df, user_api_key, optimized):
@@ -148,18 +142,10 @@ def create_new_center(df, user_api_key, optimized):
     impact_min += df.loc[0, "distance_min_imp"] - 1
     df.loc[0, "hdistance_min"] = 0.1
     df.loc[0, "distance_min_imp"] = 1
-    df.loc[0, "population"] += 50
 
     # define name of new columns and apply distance request in googlemaps
-    get_google_distances(
-        df,
-        "new_km_distance",
-        "new_min_distance",
-        "new_center_lat",
-        "new_center_lon",
-        user_api_key,
-        limit_analysis=True,
-    )
+    get_google_distances(df,"new_km_distance","new_min_distance",
+        "new_center_lat","new_center_lon",user_api_key,limit_analysis=True)
 
     # for each analyzed census tract, if new time is lower than current value
     # assign new center as closest center
@@ -173,15 +159,8 @@ def create_new_center(df, user_api_key, optimized):
 
     # drop helper columns created by the function
     df = df.drop(
-        columns=[
-            "new_center_lat",
-            "new_center_lon",
-            "hdistance_new_center",
-            "to_analyze",
-            "new_km_distance",
-            "new_min_distance",
-        ]
-    )
+        columns=["new_center_lat","new_center_lon","hdistance_new_center",
+            "to_analyze","new_km_distance","new_min_distance"])
 
     return df, benefited_ct, impact_km, impact_min, ranking
 
