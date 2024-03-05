@@ -28,7 +28,7 @@ Lastly, we created a function that would optimize the location of a predetermine
 ![Center Optimization](images/Dash_ModelSim.jpeg)
 
 ### <span style="color:maroon;"> How to Run our Model </span>
-Our Scripts are all saved within the analysis folder in our Early Education Repository. Once the repository is clones, this can be run from your Terminal, with a few requirements beforehand.
+Our Scripts are all saved within the analysis folder in our Early Education Repository. Once the repository is clone, this can be run from your Terminal, with a few requirements beforehand.
 
 Firstly, you must run `poetry install` to ensure you have the right packages.
 
