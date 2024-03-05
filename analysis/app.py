@@ -37,8 +37,7 @@ gdf["hover_text"] = gdf.apply(
         f'Population of Children Under 5: {row.get("pop_under5", "N/A"):.2f}<br>'
         f'Distance to Closest ECC (min): {row.get("distance_min_imp", "N/A"):.2f}<br>'
         f'Average Distance to Closest 3 ECC (min): {row.get("distance_mean_imp", "N/A"):.2f}'
-    ),
-    axis=1,)
+    ), axis=1,)
 
 geojson = json.loads(gdf.to_json())     # Converts to GEOJSON for plotting
 
@@ -341,10 +340,9 @@ def early_education_dash():
 
 
     # Callback for updating the Demographic Dynamics graph
-    @app.callback(
-        Output("race-bar-graph", "figure"),
-        [Input("socioeconomic-factor-dropdown_1", "value")],
-    )
+    @app.callback(Output("race-bar-graph", "figure"),
+        [Input("socioeconomic-factor-dropdown_1", "value")])
+    
     def update_race_bar_graph(value):
         """
         Updates and returns the race bar graph figure based on the selected 
@@ -417,13 +415,10 @@ def early_education_dash():
 
 
     # Callback for updating the Early Education Accessibility graph
-    @app.callback(
-        Output("correlation-graph", "figure"),
-        [
-            Input("socioeconomic-factor-dropdown", "value"),
-            Input("socioeconomic-factor-y-dropdown", "value"),
-        ],
-    )
+    @app.callback(Output("correlation-graph", "figure"),
+        [Input("socioeconomic-factor-dropdown", "value"),
+        Input("socioeconomic-factor-y-dropdown", "value")])
+    
     def update_graph(selected_factor, y_col):
         """
         Updates and returns the correlation graph figure based on selected 
@@ -434,26 +429,22 @@ def early_education_dash():
             x=selected_factor,
             y=y_col,
             labels={"distance_mean_imp": "Distance to Closest ECCs"},
-            notched=True,   # Visual indication of median's confidence interval
-        )
+            notched=True)   # Visual indication of median's confidence interval
 
         fig.update_traces(marker_color="#1f77b4")
         fig.update_layout(
             title="""Average Distance to Nearest Childcare Centers Among Different Socioeconomic Groups""",
             yaxis_title="Distance to Closest ECCs",
             xaxis_title=selected_factor.replace("_", " ").title(),
-            boxmode="group",
-        )
+            boxmode="group")
 
         return fig
 
 
     # Callback for updating Model Simulation
-    @app.callback(
-        Output("model_output", "children"),
+    @app.callback(Output("model_output", "children"),
         [Input("run-simulation-button", "n_clicks")],
-        [State("centers_input", "value"), State("optimized_dropdown", "value")],
-    )
+        [State("centers_input", "value"), State("optimized_dropdown", "value")])
 
     def update_model_output(n_clicks, centers_input, optimized_dropdown):
         '''
