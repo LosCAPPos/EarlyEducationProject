@@ -53,7 +53,7 @@ def main(gather_data, googleapi, test):
         print("Merging Child Center and Census Data")
         spatial_join.assign_ccc_to_ct(test=test)
 
-    print("Visualizing Data")
+    print("Visualizing Data (optional optimization)")
     app_serv = app.early_education_dash()
     url = "http://127.0.0.1:8000"
     webbrowser.open_new(url)
