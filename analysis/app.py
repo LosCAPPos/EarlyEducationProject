@@ -9,7 +9,6 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pandas as pd
-import numpy as np
 import geopandas as gpd
 import json
 from analysis.optimization import create_several_child_centers
@@ -28,8 +27,7 @@ gdf["GEOID"] = gdf["GEOID"].astype(str)
 gdf = gdf.merge(
     df_final[["GEOID", "pop_under5", "distance_min_imp", "distance_mean_imp"]],
     on="GEOID",
-    how="left",
-)
+    how="left",)
 
 # Generates hover text and combines data points for each geographic unit
 gdf["hover_text"] = gdf.apply(
@@ -40,32 +38,26 @@ gdf["hover_text"] = gdf.apply(
         f'Distance to Closest ECC (min): {row.get("distance_min_imp", "N/A"):.2f}<br>'
         f'Average Distance to Closest 3 ECC (min): {row.get("distance_mean_imp", "N/A"):.2f}'
     ),
-    axis=1,
-)
+    axis=1,)
 
 geojson = json.loads(gdf.to_json())     # Converts to GEOJSON for plotting
 
 # Maps from column values to more "human-readable" category names
-race_mapping = {
-    "majority_white": "Majority White",
+race_mapping = {"majority_white": "Majority White",
     "majority_black": "Majority Black",
     "majority_asian": "Majority Asian",
-    "majority_hispanic": "Majority Hispanic",
-}
+    "majority_hispanic": "Majority Hispanic",}
 for race_col, race_name in race_mapping.items():
     df_final.loc[df_final[race_col] == 1, "race_category"] = race_name
 
 # Categorizes homeowner rate and education level into bins for analysis
-df_final["housing_category"] = pd.cut(
-    df_final["homeowner_rate"],
+df_final["housing_category"] = pd.cut(df_final["homeowner_rate"],
     bins=[-1, 0.5, 1],
-    labels=["Lower Homeownership", "Higher Homeownership"],
-)
+    labels=["Lower Homeownership", "Higher Homeownership"])
 df_final["education_category"] = pd.cut(
     df_final["higher_education_rate"],
     bins=[-1, 0.5, 1],
-    labels=["Lower Education", "Higher Education"],
-)
+    labels=["Lower Education", "Higher Education"])
 
 
 def create_us_map():
@@ -82,23 +74,21 @@ def create_us_map():
                   "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
                   "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
                   "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"],
+                  # Data of ECC retrieved from https://childcaredeserts.org 
         "Deserts": [60, 61, 48, 35, 60, 61, 51, 44, 38, 44,
                               68, 49, 58, 55, 23, 44, 50, 42, 22, 51,
                               53, 44, 26, 48, 54, 60, 28, 72, 46, 46,
                               53, 64, 44, 24, 39, 55, 60, 57, 47, 42,
-                              43, 48, 48, 77, 35, 47, 63, 64, 54, 34,]
-    })
+                              43, 48, 48, 77, 35, 47, 63, 64, 54, 34,]})
 
     # Adds hover text for each state with ECC Desert Percentage
     df["hover_text"] = df.apply(
         lambda row: f'State: {row["State"]}<br>ECC Desert: {row["Deserts"]}%',
-        axis=1,
-    )
+        axis=1,)
 
     # Creates choropleth map using Plotly with States' ECC desert percentage
     fig = go.Figure(
-        data=go.Choropleth(
-            locations=df["State"],
+        data=go.Choropleth(locations=df["State"],
             z=df["Deserts"].astype(float), # Criteria for color coding
             locationmode="USA-states",
             colorscale="Blues",
@@ -106,20 +96,14 @@ def create_us_map():
             hoverinfo="text",  # Only shows the hover text
             showscale=True,
             marker_line_color="white",  # Color for borders
-            marker_line_width=0.5,
-        )
-    )
+            marker_line_width=0.5,))
 
-    fig.update_layout(
-        geo=dict(
+    fig.update_layout(geo=dict(
             scope="usa",
             projection=go.layout.geo.Projection(type="albers usa"),
             showlakes=True,
-            lakecolor="rgb(255, 255, 255)",
-        ),
-        margin=dict(l=0, r=0, t=0, b=0),
-    )
-
+            lakecolor="rgb(255, 255, 255)",),
+        margin=dict(l=0, r=0, t=0, b=0),)
     return fig
 
 
@@ -133,8 +117,7 @@ def create_il_map():
         fig_il: A Plotly graph object figure containing the configured map.
     """
     fig_il = go.Figure(
-        data=go.Choropleth(
-            geojson=geojson,
+        data=go.Choropleth(geojson=geojson,
             featureidkey="properties.GEOID",
             locations=gdf["GEOID"],  # Uses the GEOID for mapping each tract
             z=gdf["distance_min_imp"],  # Minimum distance for color coding
@@ -143,31 +126,19 @@ def create_il_map():
             colorscale="Blues",  
             colorbar_title="Distance to ECC<br>(min)", 
             marker_line_color="white",
-            marker_line_width=0.1,
-        )
-    )
+            marker_line_width=0.1))
 
     # Sets the map bounds to the extent of the GeoJSON data
-    fig_il.update_geos(
-        visible=True,
-        projection_scale=3,  
-        center=dict(lat=39.8, lon=-89.6), 
-        fitbounds="locations"
-    )
+    fig_il.update_geos(visible=True,projection_scale=3,  
+        center=dict(lat=39.8, lon=-89.6), fitbounds="locations")
 
     fig_il.update_layout(
         title_text="Exploring Distances to Closest Early Childcare Centers",
         geo=dict(
             # Hides irrelevant features such as coast, neighbouring States, ...
-            showframe=False,
-            showcoastlines=False,
-            showcountries=False,
-            showland=False,
-            landcolor="rgba(255, 255, 255, 0)"
-        ),
-        margin=dict(l=0, r=0, t=40, b=0),
-    )
-
+            showframe=False, showcoastlines=False, showcountries=False,
+            showland=False,landcolor="rgba(255, 255, 255, 0)"),
+        margin=dict(l=0, r=0, t=40, b=0))
     return fig_il
 
 
@@ -379,18 +350,11 @@ def early_education_dash():
         Updates and returns the race bar graph figure based on the selected 
         analysis category. 
         """
-        default_analysis = [
-                "majority_white",
-                "majority_black",
-                "majority_hispanic",
-                "majority_asian",
-            ]
-        default_labels = [
-                "Majority White",
-                "Majority Black",
-                "Majority Hispanic",
-                "Majority Asian",
-            ]
+        default_analysis = ["majority_white", "majority_black",
+                "majority_hispanic", "majority_asian",]
+        default_labels = ["Majority White", "Majority Black",
+                "Majority Hispanic", "Majority Asian",]
+        
         # Determines analysis category and data based on user selection
         if value == "Race Analysis":
             current_analysis = default_analysis
@@ -400,10 +364,8 @@ def early_education_dash():
             current_analysis_labels = ["Homeowner Rate", "Mobility Rate"]
         elif value == "Education":
             current_analysis = ["less_than_hs_rate", "higher_education_rate"]
-            current_analysis_labels = [
-                "Less Than High School Rate",
-                "Higher Education Rate",
-            ]
+            current_analysis_labels = ["Less Than High School Rate",
+                "Higher Education Rate"]
         elif value == "Income":
             current_analysis = ["below_poverty_rate"]
             current_analysis_labels = ["Below Poverty Rate"]
@@ -454,7 +416,6 @@ def early_education_dash():
         return race_bar_graph_figure
 
 
-
     # Callback for updating the Early Education Accessibility graph
     @app.callback(
         Output("correlation-graph", "figure"),
@@ -490,8 +451,8 @@ def early_education_dash():
     # Callback for updating Model Simulation
     @app.callback(
         Output("model_output", "children"),
-        [Input("run-simulation-button", "n_clicks")],  # Listen for button click
-        [State("centers_input", "value"), State("optimized_dropdown", "value")],  # Other inputs as states
+        [Input("run-simulation-button", "n_clicks")],
+        [State("centers_input", "value"), State("optimized_dropdown", "value")],
     )
 
     def update_model_output(n_clicks, centers_input, optimized_dropdown):
