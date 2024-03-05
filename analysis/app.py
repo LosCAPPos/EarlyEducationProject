@@ -408,7 +408,7 @@ def early_education_dash():
             current_analysis = ["below_poverty_rate"]
             current_analysis_labels = ["Below Poverty Rate"]
         else:
-            value == "Race Analysis"
+            value = "Race Analysis"
             current_analysis = default_analysis
             current_analysis_labels = default_labels
 
