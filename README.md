@@ -48,5 +48,5 @@ There are a few options you can add afterwards, however those are mostly to ensu
 --gather_data default=True 
 
 # Places the data clean and gather outputs in a separate test folder, to avoid rewriting what we already have
---test default=True, 
+--test default=True 
 ```
