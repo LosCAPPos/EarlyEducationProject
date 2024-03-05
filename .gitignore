@@ -3,3 +3,5 @@ __pycache__
 .vscode
 Child_Care_Centers.csv
 .DS_Store
+CensusAPI_key.txt
+Google_distance_API_key.txt
