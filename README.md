@@ -51,4 +51,4 @@ There are a few options you can add afterwards, however those are mostly to ensu
 --test default=True 
 ```
 
-* Disclaimer: We recognize that the placing decision for new childcare centers is a multifactorial decision rather than a decision that is only defined by the distance to the closest childcare center. In this context, the results of the optimization must be taken carefully and only as a reference of where new childcare centers would have the highest impact on census tracts in Illinois in terms of distance, not as a final decision or suggestion related to the best location for new childcare centers.
+\* Disclaimer: We recognize that the placing decision for new childcare centers is a multifactorial decision rather than a decision that is only defined by the distance to the closest childcare center. In this context, the results of the optimization must be taken carefully and only as a reference of where new childcare centers would have the highest impact on census tracts in Illinois in terms of distance, not as a final decision or suggestion related to the best location for new childcare centers.
