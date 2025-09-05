@@ -25,8 +25,6 @@ We followed this up by merging the data, allowing us to discover how various soc
 
 Lastly, we created a function that would optimize the location of a predetermined number of Early Education Centers in Illinois, reducing the total time traveled accross all tracts. The idea behind this is imagining a situation where the state was given enough of a budget to build a specific number of Early Education Centers, hoping to increase accesibility by reducing the time required to travel to the centers, assuming that a large factor in accesibility is the travel time*. If you were to just place the Early Education Center inside the tracts with the longest time to the nearest centers you may not be fulfilling this goals as effectively as possible, as there may be multiple tracts near enough to each other that would benefit greater from a more centralized placement. This model can be tested in the last section of our Data Visualization board.
 
-![Center Optimization](images/Dash_ModelSim.jpeg)
-
 ### <span style="color:maroon;"> How to Run our Model </span>
 Our Scripts are all saved within the analysis folder in our Early Education Repository. Once the repository is cloned, this can be run from your Terminal, with a few requirements beforehand.
 
